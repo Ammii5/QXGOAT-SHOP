@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { syncProductsFromApi } from '../data/storeDb'
 
 const AppContext = createContext(null)
@@ -19,9 +19,18 @@ export function AppProvider({ children }) {
   // ---- cart ----
   const [cartItems, setCartItems] = useState([]) // [{ productId, qty }]
   const [liveProducts, setLiveProducts] = useState([])
-  const allProducts = liveProducts
-    .filter((product) => product.active !== false)
-    .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0))
+
+  // 'loading' | 'ready' | 'error' — drives skeletons and the retry affordance.
+  const [status, setStatus] = useState('loading')
+
+  const allProducts = useMemo(
+    () =>
+      liveProducts
+        .filter((product) => product.active !== false)
+        .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0)),
+    [liveProducts],
+  )
+
   const allCategories = useMemo(() => {
     const map = new Map()
     for (const product of allProducts) {
@@ -34,23 +43,25 @@ export function AppProvider({ children }) {
     return [...map.values()]
   }, [allProducts])
 
-  useEffect(() => {
-    let isMounted = true
-
-    async function refreshProducts() {
-      try {
-        const remote = await syncProductsFromApi()
-        if (isMounted) setLiveProducts(remote)
-      } catch (error) {
-        console.warn('Product sync failed', error)
-      }
-    }
-
-    refreshProducts()
-    return () => {
-      isMounted = false
+  const loadProducts = useCallback(async ({ signal } = {}) => {
+    setStatus('loading')
+    try {
+      const remote = await syncProductsFromApi()
+      if (signal?.aborted) return
+      setLiveProducts(remote)
+      setStatus('ready')
+    } catch (error) {
+      if (signal?.aborted) return
+      console.warn('Product sync failed', error)
+      setStatus('error')
     }
   }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    loadProducts({ signal: controller.signal })
+    return () => controller.abort()
+  }, [loadProducts])
 
   // ---- notifications ----
   const [notifications, setNotifications] = useState([])
@@ -66,10 +77,13 @@ export function AppProvider({ children }) {
   const toastTimer = useRef(null)
 
   function showToast(message) {
-    setToast(message)
+    // Re-keyed so repeat adds of the same product replay the animation.
+    setToast({ id: Date.now(), message })
     window.clearTimeout(toastTimer.current)
-    toastTimer.current = window.setTimeout(() => setToast(null), 2000)
+    toastTimer.current = window.setTimeout(() => setToast(null), 2600)
   }
+
+  useEffect(() => () => window.clearTimeout(toastTimer.current), [])
 
   function closeAllOverlays() {
     setMenuOpen(false)
@@ -105,13 +119,11 @@ export function AppProvider({ children }) {
     setCartItems((items) => {
       const existing = items.find((i) => i.productId === product.id)
       if (existing) {
-        return items.map((i) =>
-          i.productId === product.id ? { ...i, qty: i.qty + qty } : i,
-        )
+        return items.map((i) => (i.productId === product.id ? { ...i, qty: i.qty + qty } : i))
       }
       return [...items, { productId: product.id, qty }]
     })
-    showToast(`Added "${product.name}" to cart`)
+    showToast(`Added “${product.name}” to cart`)
   }
 
   function updateCartQty(productId, qty) {
@@ -156,15 +168,14 @@ export function AppProvider({ children }) {
     () =>
       allCategories.map((cat) => ({
         ...cat,
-        count: allProducts.filter((p) => (p.categoryId || p.category?.toLowerCase().replace(/\s+/g, '-')) === cat.id).length,
+        count: allProducts.filter(
+          (p) => (p.categoryId || p.category?.toLowerCase().replace(/\s+/g, '-')) === cat.id,
+        ).length,
       })),
     [allCategories, allProducts],
   )
 
-  const cartCount = useMemo(
-    () => cartItems.reduce((sum, i) => sum + i.qty, 0),
-    [cartItems],
-  )
+  const cartCount = useMemo(() => cartItems.reduce((sum, i) => sum + i.qty, 0), [cartItems])
 
   const cartDetailed = useMemo(
     () =>
@@ -178,7 +189,9 @@ export function AppProvider({ children }) {
           return { ...item, product, unitPrice, lineTotal: unitPrice * item.qty }
         })
         .filter(Boolean),
-    [cartItems],
+    // `allProducts` was missing here: cart rows could resolve against an empty
+    // catalogue and silently drop.
+    [cartItems, allProducts],
   )
 
   const cartTotal = useMemo(
@@ -186,10 +199,11 @@ export function AppProvider({ children }) {
     [cartDetailed],
   )
 
-  const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.read).length,
-    [notifications],
-  )
+  const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications])
+
+  function effectivePrice(p) {
+    return p.discountPct ? p.price * (1 - p.discountPct / 100) : p.price
+  }
 
   function sortProducts(list) {
     const sorted = [...list]
@@ -209,25 +223,44 @@ export function AppProvider({ children }) {
     return sorted
   }
 
-  function effectivePrice(p) {
-    return p.discountPct ? p.price * (1 - p.discountPct / 100) : p.price
+  /** The search box was already bound to state but nothing ever read it. */
+  function matchesQuery(product, query) {
+    const q = query.trim().toLowerCase()
+    if (!q) return true
+    return [product.name, product.category, product.description, product.badge]
+      .filter(Boolean)
+      .some((field) => String(field).toLowerCase().includes(q))
   }
 
   const shopProducts = useMemo(() => {
     let list = allProducts
     if (categoryFilter) list = list.filter((p) => p.categoryId === categoryFilter)
+    if (searchQuery.trim()) list = list.filter((p) => matchesQuery(p, searchQuery))
     return sortProducts(list)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categoryFilter, sortBy])
+  }, [categoryFilter, sortBy, allProducts, searchQuery])
 
   const dealProducts = useMemo(
     () => sortProducts(allProducts.filter((p) => p.discountPct)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sortBy],
+    [sortBy, allProducts],
   )
+
+  /** Home's trending row should react to the header search too. */
+  const featuredProducts = useMemo(() => {
+    if (!searchQuery.trim()) return allProducts
+    return allProducts.filter((p) => matchesQuery(p, searchQuery))
+  }, [allProducts, searchQuery])
+
+  const activeFilterCount = (categoryFilter ? 1 : 0) + (sortBy !== 'popularity' ? 1 : 0)
 
   const value = {
     products: allProducts,
+    featuredProducts,
+    status,
+    isLoading: status === 'loading',
+    hasError: status === 'error',
+    reloadProducts: loadProducts,
     selectedProduct,
     openProduct,
     pendingPayment,
@@ -243,6 +276,7 @@ export function AppProvider({ children }) {
     toggleCategoryFilter,
     setCategoryFilter,
     resetFilters,
+    activeFilterCount,
     shopProducts,
     dealProducts,
     effectivePrice,

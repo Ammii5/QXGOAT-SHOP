@@ -1,110 +1,165 @@
-import { X, Minus, Plus, Trash2, ShoppingBag, Package } from 'lucide-react'
+import { ArrowRight, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import Backdrop from './Backdrop'
+import { cx, formatPrice, productIcon } from '../lib/ui'
+import { Drawer, OverlayHeading } from './Overlay'
+import { Button, EmptyState } from './ui'
+
+function QtyStepper({ qty, onChange, name }) {
+  return (
+    <div className="flex items-center gap-1 rounded-full border border-surface-line bg-surface-soft p-1">
+      <button
+        type="button"
+        aria-label={`Decrease quantity of ${name}`}
+        onClick={() => onChange(qty - 1)}
+        className="grid h-7 w-7 place-items-center rounded-full bg-surface text-ink shadow-hair transition-colors hover:bg-ink hover:text-white active:scale-90"
+      >
+        <Minus size={13} strokeWidth={2.8} />
+      </button>
+      <span className="tnum w-6 text-center text-sm font-bold text-ink">{qty}</span>
+      <button
+        type="button"
+        aria-label={`Increase quantity of ${name}`}
+        onClick={() => onChange(qty + 1)}
+        className="grid h-7 w-7 place-items-center rounded-full bg-surface text-ink shadow-hair transition-colors hover:bg-ink hover:text-white active:scale-90"
+      >
+        <Plus size={13} strokeWidth={2.8} />
+      </button>
+    </div>
+  )
+}
 
 export default function CartDrawer() {
-  const { cartOpen, setCartOpen, cartDetailed, updateCartQty, removeFromCart, cartTotal, checkout, goToTab } =
-    useApp()
+  const {
+    cartOpen,
+    setCartOpen,
+    cartDetailed,
+    updateCartQty,
+    removeFromCart,
+    cartTotal,
+    cartCount,
+    checkout,
+    goToTab,
+  } = useApp()
+
+  const close = () => setCartOpen(false)
+  const isEmpty = cartDetailed.length === 0
 
   return (
-    <>
-      {cartOpen && <Backdrop onClick={() => setCartOpen(false)} />}
+    <Drawer open={cartOpen} onClose={close} side="right" labelledBy="cart-drawer-title" className="max-w-md">
+      <OverlayHeading
+        icon={ShoppingBag}
+        title="Your cart"
+        caption={isEmpty ? 'Nothing added yet' : `${cartCount} ${cartCount === 1 ? 'item' : 'items'}`}
+        onClose={close}
+        closeLabel="Close cart"
+      />
 
-      <div
-        className={`fixed bottom-0 left-1/2 z-40 w-full max-w-[428px] -translate-x-1/2 transform rounded-t-[26px] bg-white shadow-2xl transition-transform duration-300 ${
-          cartOpen ? 'translate-y-0' : 'translate-y-full'
-        }`}
-        style={{ maxHeight: '82vh' }}
-      >
-        <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-surface-line" />
-
-        <div className="flex items-center justify-between px-5 pb-2 pt-3">
-          <h3 className="text-[16px] font-extrabold text-ink">Your Cart</h3>
-          <button
-            aria-label="Close cart"
-            onClick={() => setCartOpen(false)}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-ink-muted active:scale-90"
-          >
-            <X size={19} />
-          </button>
+      {isEmpty ? (
+        <div className="flex flex-1 items-center px-5">
+          <EmptyState
+            icon={ShoppingBag}
+            title="Your cart is empty"
+            description="Browse the catalogue and add a course, bot or tool to get started."
+            className="w-full border-none bg-transparent py-8"
+            action={
+              <Button
+                onClick={() => {
+                  close()
+                  goToTab('shop')
+                }}
+              >
+                Browse the shop
+              </Button>
+            }
+          />
         </div>
+      ) : (
+        <>
+          <ul className="flex-1 divide-y divide-surface-hair overflow-y-auto overscroll-contain px-5">
+            {cartDetailed.map(({ productId, qty, product, unitPrice, lineTotal }) => {
+              const Icon = productIcon(product)
+              return (
+                <li key={productId} className="flex gap-3 py-4">
+                  <span className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-xl border border-surface-line bg-gradient-to-br from-surface-soft to-surface-sunk text-primary/40">
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt=""
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                        onError={(event) => {
+                          event.currentTarget.style.display = 'none'
+                        }}
+                      />
+                    ) : (
+                      <Icon size={24} strokeWidth={1.4} />
+                    )}
+                  </span>
 
-        {cartDetailed.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 px-6 pb-10 pt-6 text-center">
-            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-soft text-ink-muted">
-              <ShoppingBag size={24} />
-            </span>
-            <p className="text-[13px] font-semibold text-ink">Your cart is empty</p>
-            <p className="text-[12px] text-ink-muted">Add something you'll love from the shop.</p>
-            <button
-              onClick={() => goToTab('shop')}
-              className="mt-1 rounded-full bg-primary px-5 py-2.5 text-[12.5px] font-bold text-white shadow-cta active:scale-95"
-            >
-              Browse Shop
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="max-h-[42vh] overflow-y-auto px-5 pb-2">
-              {cartDetailed.map(({ productId, qty, product, unitPrice, lineTotal }) => {
-                const Icon = product.icon || Package
-                return (
-                  <div key={productId} className="flex items-center gap-3 border-b border-surface-line py-3 last:border-b-0">
-                    <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-50 to-slate-200 text-primary">
-                      <Icon size={24} strokeWidth={1.5} />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-[12.5px] font-bold text-ink">{product.name}</p>
-                      <p className="mt-0.5 text-[12px] font-extrabold text-ink">
-                        ${unitPrice.toFixed(2)}
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="line-clamp-2 text-sm font-bold leading-snug text-ink">
+                        {product.name}
                       </p>
-                    </div>
-                    <div className="flex shrink-0 items-center gap-2">
-                      <div className="flex items-center gap-1.5 rounded-full bg-surface-soft px-1.5 py-1">
-                        <button
-                          aria-label="Decrease quantity"
-                          onClick={() => updateCartQty(productId, qty - 1)}
-                          className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-ink shadow-sm active:scale-90"
-                        >
-                          <Minus size={12} />
-                        </button>
-                        <span className="w-4 text-center text-[12px] font-bold text-ink">{qty}</span>
-                        <button
-                          aria-label="Increase quantity"
-                          onClick={() => updateCartQty(productId, qty + 1)}
-                          className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-ink shadow-sm active:scale-90"
-                        >
-                          <Plus size={12} />
-                        </button>
-                      </div>
                       <button
-                        aria-label={`Remove ${product.name}`}
+                        type="button"
+                        aria-label={`Remove ${product.name} from cart`}
                         onClick={() => removeFromCart(productId)}
-                        className="flex h-7 w-7 items-center justify-center rounded-full text-red-500 active:scale-90"
+                        className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-ink-faint transition-colors hover:bg-danger-light hover:text-danger active:scale-90"
                       >
-                        <Trash2 size={15} />
+                        <Trash2 size={14} strokeWidth={2.2} />
                       </button>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
 
-            <div className="safe-bottom border-t border-surface-line px-5 pb-4 pt-3">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-[13px] font-semibold text-ink-muted">Subtotal</span>
-                <span className="text-[18px] font-extrabold text-ink">${cartTotal.toFixed(2)}</span>
+                    <p className="tnum text-xs text-ink-muted">
+                      {formatPrice(unitPrice)} each
+                    </p>
+
+                    <div className="mt-auto flex items-center justify-between gap-2 pt-1">
+                      <QtyStepper
+                        qty={qty}
+                        name={product.name}
+                        onChange={(next) => updateCartQty(productId, next)}
+                      />
+                      <span className="tnum text-md font-extrabold text-ink">
+                        {formatPrice(lineTotal)}
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+
+          <div className="border-t border-surface-line bg-surface-soft px-5 py-4">
+            <dl className="mb-3 space-y-1.5">
+              <div className="flex items-center justify-between text-sm">
+                <dt className="text-ink-muted">Subtotal</dt>
+                <dd className="tnum font-semibold text-ink">{formatPrice(cartTotal)}</dd>
               </div>
-              <button
-                onClick={checkout}
-                className="w-full rounded-full bg-primary py-3.5 text-[13.5px] font-extrabold tracking-wide text-white shadow-cta active:scale-[0.98]"
-              >
-                CHECKOUT
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </>
+              <div className="flex items-center justify-between text-sm">
+                <dt className="text-ink-muted">Delivery</dt>
+                <dd className="font-semibold text-mint-dark">Instant · digital</dd>
+              </div>
+              <div className="flex items-center justify-between border-t border-surface-line pt-2.5">
+                <dt className="text-md font-bold text-ink">Total</dt>
+                <dd className={cx('tnum text-xl font-extrabold tracking-tight text-ink')}>
+                  {formatPrice(cartTotal)}
+                </dd>
+              </div>
+            </dl>
+
+            <Button block size="lg" onClick={checkout}>
+              Checkout
+              <ArrowRight size={16} strokeWidth={2.6} />
+            </Button>
+            <p className="mt-2.5 text-center text-xs text-ink-muted">
+              Payment details come next — nothing is charged yet.
+            </p>
+          </div>
+        </>
+      )}
+      <div className="safe-bottom" />
+    </Drawer>
   )
 }

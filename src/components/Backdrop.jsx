@@ -1,8 +1,5 @@
-export default function Backdrop({ onClick, className = '' }) {
-  return (
-    <div
-      onClick={onClick}
-      className={`fixed inset-0 z-30 bg-black/40 backdrop-blur-[1px] transition-opacity ${className}`}
-    />
-  )
-}
+/**
+ * Kept for backwards compatibility with any existing import path.
+ * The canonical implementation now lives in ./Overlay.
+ */
+export { Backdrop as default } from './Overlay'

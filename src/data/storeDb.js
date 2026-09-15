@@ -147,13 +147,22 @@ export async function fetchProductsFromApi() {
 
 export async function syncProductsFromApi() {
   if (!productsSyncPromise) {
-    productsSyncPromise = fetchProductsFromApi().then((remoteProducts) => {
-      if (!remoteProducts.length) {
-        throw new Error('FileStore returned no products')
-      }
-
-      return remoteProducts
-    })
+    productsSyncPromise = fetchProductsFromApi().then(
+      (remoteProducts) => {
+        // An empty catalogue is a legitimate state, not a failure: the store
+        // renders its "no products yet" empty state for it. Don't cache the
+        // empty result though, so a later reload picks up new products.
+        if (!remoteProducts.length) productsSyncPromise = null
+        return remoteProducts
+      },
+      (error) => {
+        // Never cache a rejection. The cached promise is what de-duplicates
+        // concurrent callers, but holding on to a rejected one means the
+        // "Try again" affordance just re-awaits the same failure forever.
+        productsSyncPromise = null
+        throw error
+      },
+    )
   }
 
   return productsSyncPromise

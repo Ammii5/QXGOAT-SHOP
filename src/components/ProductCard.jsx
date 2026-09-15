@@ -1,63 +1,113 @@
-import { Package, Star, ShoppingCart } from 'lucide-react'
+import { useState } from 'react'
+import { Plus } from 'lucide-react'
+import { cx, netPrice, productIcon } from '../lib/ui'
+import { Price, Rating } from './ui'
 
-const formatPrice = (price) => `$${Number(price).toFixed(2)}`
+/**
+ * Fluid by default — the parent grid or scroller decides the width, so the
+ * same card works in a 2-up phone grid and a 4-up desktop grid.
+ */
+export default function ProductCard({ product, onAddToCart, onOpenProduct, className }) {
+  const { name, badge, badgeColor, rating, reviews, price, discountPct } = product
+  const Icon = productIcon(product)
 
-export default function ProductCard({ product, onAddToCart, onOpenProduct }) {
-  const { name, badge, badgeColor, rating, reviews, price } = product
-  const Icon = product.icon || Package
+  // The old card rendered the <img> *and* the fallback icon, so the icon sat
+  // on top of every real photo. Now the icon only appears if there's no usable
+  // image — including when the image 404s at runtime.
+  const [imageFailed, setImageFailed] = useState(false)
+  const showImage = Boolean(product.image) && !imageFailed
+
+  const discount = Number(discountPct || 0)
+  const finalPrice = netPrice(product)
 
   return (
-    <div
+    <article
       role="button"
       tabIndex={0}
+      aria-label={`View ${name}`}
       onClick={() => onOpenProduct(product)}
       onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') onOpenProduct(product)
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onOpenProduct(product)
+        }
       }}
-      className="w-[164px] shrink-0 snap-start cursor-pointer overflow-hidden rounded-2xl border border-surface-line bg-white shadow-card lg:w-full"
+      className={cx(
+        'group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-surface-line bg-surface shadow-soft',
+        'transition-all duration-200 ease-spring',
+        'hover:-translate-y-1 hover:border-primary-200 hover:shadow-raised active:translate-y-0 active:scale-[0.99]',
+        className,
+      )}
     >
-      <div className="relative flex h-[118px] items-center justify-center bg-gradient-to-br from-slate-50 to-slate-200 lg:h-[170px]">
-        <span
-          className={`absolute left-2 top-2 rounded-full px-2 py-1 text-[8.5px] font-extrabold tracking-wide text-white ${badgeColor}`}
-        >
-          {badge}
-        </span>
-        {product.image ? (
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-surface-soft to-surface-sunk">
+        {showImage ? (
           <img
             src={product.image}
             alt={name}
-            className="h-full w-full object-cover"
-            onError={(event) => {
-              event.currentTarget.style.display = 'none'
-            }}
+            loading="lazy"
+            decoding="async"
+            onError={() => setImageFailed(true)}
+            className="h-full w-full object-cover transition-transform duration-500 ease-spring group-hover:scale-105"
           />
-        ) : null}
-        <Icon size={46} strokeWidth={1.5} className="text-primary" />
+        ) : (
+          <span className="grid h-full w-full place-items-center text-primary/35">
+            <Icon size={44} strokeWidth={1.25} className="sm:h-12 sm:w-12" />
+          </span>
+        )}
+
+        <div className="pointer-events-none absolute inset-x-2 top-2 flex items-start justify-between gap-2">
+          {badge ? (
+            <span
+              className={cx(
+                'rounded-full px-2 py-1 text-[9px] font-extrabold uppercase tracking-wider text-white shadow-sm',
+                badgeColor || 'bg-primary',
+              )}
+            >
+              {badge}
+            </span>
+          ) : (
+            <span />
+          )}
+          {discount > 0 ? (
+            <span className="tnum rounded-full bg-mint px-2 py-1 text-[10px] font-extrabold leading-none text-white shadow-sm">
+              −{Math.round(discount)}%
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      <div className="px-2.5 pb-3 pt-2.5">
-        <p className="min-h-[32px] text-[12.5px] font-bold leading-snug text-ink">{name}</p>
+      <div className="flex flex-1 flex-col gap-2 p-3 sm:p-3.5">
+        {product.category ? (
+          <p className="truncate text-[10px] font-bold tracking-tight text-primary">
+            {product.category}
+          </p>
+        ) : null}
 
-        <div className="mt-1.5 flex items-center gap-1 text-[11px] text-ink-muted">
-          <Star size={11} className="fill-amber-400 text-amber-400" />
-          <b className="font-bold text-ink">{rating}</b>
-          <span>({reviews})</span>
-        </div>
+        <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-bold leading-snug tracking-tight text-ink sm:text-base">
+          {name}
+        </h3>
 
-        <div className="mt-2 flex items-center justify-between">
-          <span className="text-[14.5px] font-extrabold text-ink">{formatPrice(price)}</span>
+        <Rating value={rating} reviews={reviews} />
+
+        <div className="mt-auto flex items-end justify-between gap-2 pt-1.5">
+          <Price value={finalPrice} was={discount > 0 ? price : null} size="sm" />
+
           <button
+            type="button"
             aria-label={`Add ${name} to cart`}
             onClick={(event) => {
               event.stopPropagation()
               onAddToCart()
             }}
-            className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-primary text-white shadow-cta transition-transform active:scale-90"
+            className={cx(
+              'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-white shadow-cta',
+              'transition-all duration-200 ease-spring hover:bg-primary-500 hover:shadow-raised active:scale-90',
+            )}
           >
-            <ShoppingCart size={14} strokeWidth={2.2} />
+            <Plus size={17} strokeWidth={2.8} />
           </button>
         </div>
       </div>
-    </div>
+    </article>
   )
 }

@@ -693,7 +693,7 @@
               'Content-Type': 'application/json',
               'x-api-key': BASE44_API_KEY
             },
-            body: JSON.stringify({ limit: 50 })
+            body: JSON.stringify({ limit: 200 })
           });
 
           if (!response.ok) {
@@ -704,7 +704,8 @@
           const files = Array.isArray(json) ? json : json.files || json.items || json.data || [];
           const targetFile = files.find((file) => {
             const name = (file.name || file.filename || file.title || '').toLowerCase();
-            return name.includes('qxgoat') || name.includes('products') || name.includes('store');
+            const contentType = String(file.content_type || file.contentType || file.mime_type || '').toLowerCase();
+            return /\.json$/i.test(name) && (contentType === 'application/json' || name.includes('qxgoat') || name.includes('products') || name.includes('store'));
           });
 
           if (!targetFile) return null;

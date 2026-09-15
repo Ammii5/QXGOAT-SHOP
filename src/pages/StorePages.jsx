@@ -164,7 +164,7 @@ export function CategoriesPage({ categories, onSelectCategory }) {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        {categories.map(({ id, name, icon: Icon, count }) => (
+        {categories.map(({ id, name, icon: Icon = Package, count }) => (
           <button
             key={id}
             onClick={() => onSelectCategory(id)}
@@ -227,7 +227,7 @@ export function DealsPage({ products, onAddToCart, effectivePrice }) {
       </div>
 
       <div className="space-y-3">
-        {products.map((product) => {
+        {products.length ? products.map((product) => {
           const discountedPrice = effectivePrice(product)
           const discount = Math.round(((product.price - discountedPrice) / product.price) * 100)
           const Icon = product.icon || Package
@@ -255,7 +255,7 @@ export function DealsPage({ products, onAddToCart, effectivePrice }) {
               </div>
             </div>
           )
-        })}
+        }) : <p className="rounded-2xl border border-dashed border-surface-line bg-surface-soft p-8 text-center text-[13px] font-semibold text-ink-muted">No deals available.</p>}
       </div>
     </section>
   )

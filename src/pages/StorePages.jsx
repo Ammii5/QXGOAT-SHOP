@@ -2,17 +2,25 @@ import {
   ArrowRight,
   Gift,
   Search,
-  ShieldCheck,
   Star,
   Tag,
-  UserCircle,
   Sparkles,
   SlidersHorizontal,
   Package,
 } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
 
-export function HomePage({ products, categories, onAddToCart, onShopNow }) {
+export function HomePage({
+  products,
+  categories,
+  searchQuery,
+  onSearchChange,
+  onAddToCart,
+  onShopNow,
+  onCategorySelect,
+  onOpenFilters,
+  onDeals,
+}) {
   return (
     <>
       <div className="flex gap-2.5 px-4 pb-1 pt-3.5">
@@ -20,15 +28,16 @@ export function HomePage({ products, categories, onAddToCart, onShopNow }) {
           <Search size={17} strokeWidth={2.2} className="shrink-0 text-ink-muted" />
           <input
             type="text"
+            value={searchQuery}
+            onChange={(event) => onSearchChange(event.target.value)}
             placeholder="Search gadgets, electronics, accessories..."
             className="w-full bg-transparent text-[13.5px] text-ink placeholder:text-ink-muted focus:outline-none"
-            readOnly
           />
         </label>
         <button
           aria-label="Filters"
           className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-surface-soft text-ink transition-transform active:scale-90"
-          onClick={onShopNow}
+          onClick={onOpenFilters}
         >
           <SlidersHorizontal size={18} strokeWidth={2} />
         </button>
@@ -90,7 +99,7 @@ export function HomePage({ products, categories, onAddToCart, onShopNow }) {
             <button
               key={category.id}
               className="flex w-16 shrink-0 snap-start flex-col items-center gap-2 transition-transform active:scale-95"
-              onClick={onShopNow}
+              onClick={() => onCategorySelect(category.id)}
             >
               <span className="flex h-[58px] w-[58px] items-center justify-center rounded-full border border-surface-line bg-white text-primary shadow-soft">
                 <Star size={22} strokeWidth={2} />
@@ -128,7 +137,7 @@ export function HomePage({ products, categories, onAddToCart, onShopNow }) {
           <span className="mb-1.5 block text-[11px] font-bold tracking-wide text-sky-400">SPECIAL OFFER</span>
           <h3 className="text-[17px] font-extrabold leading-tight text-white">SMARTER DIGITAL TOOLS</h3>
           <p className="mt-1.5 text-[11.5px] leading-snug text-slate-400">Courses, custom code, and trading systems designed to grow your edge.</p>
-          <button className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-2.5 text-[11.5px] font-bold tracking-wide text-white shadow-cta transition-transform active:scale-95" onClick={onShopNow}>
+          <button className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-2.5 text-[11.5px] font-bold tracking-wide text-white shadow-cta transition-transform active:scale-95" onClick={onDeals}>
             EXPLORE DEALS
             <ArrowRight size={13} strokeWidth={2.6} />
           </button>
@@ -262,36 +271,10 @@ export function AccountPage({ notifications, unreadCount, onOpenNotifications })
         </button>
       </div>
 
-      <div className="rounded-3xl bg-night px-4 py-5 text-white shadow-card">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-primary-light">
-              <UserCircle size={26} />
-            </span>
-            <div>
-              <p className="text-[16px] font-extrabold">Alex Morgan</p>
-              <p className="text-[11px] text-slate-300">Premium Member</p>
-            </div>
-          </div>
-          <ShieldCheck size={22} className="text-primary-light" />
-        </div>
-      </div>
-
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-2xl bg-white p-4 shadow-card">
-          <p className="text-[11px] text-ink-muted">Orders</p>
-          <p className="mt-2 text-[22px] font-extrabold text-ink">12</p>
-        </div>
-        <div className="rounded-2xl bg-white p-4 shadow-card">
-          <p className="text-[11px] text-ink-muted">Rewards</p>
-          <p className="mt-2 text-[22px] font-extrabold text-ink">840</p>
-        </div>
-      </div>
-
       <div className="mt-5 rounded-2xl bg-white p-4 shadow-card">
         <h3 className="mb-3 text-[15px] font-extrabold text-ink">Notifications</h3>
         <div className="space-y-3">
-          {notifications.map((item) => (
+          {notifications.length ? notifications.map((item) => (
             <div key={item.id} className="rounded-xl bg-surface-soft p-3">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-[12px] font-bold text-ink">{item.title}</p>
@@ -299,7 +282,7 @@ export function AccountPage({ notifications, unreadCount, onOpenNotifications })
               </div>
               <p className="mt-1 text-[11px] text-ink-muted">{item.body}</p>
             </div>
-          ))}
+          )) : <p className="text-[12px] text-ink-muted">No notifications available.</p>}
         </div>
       </div>
     </section>

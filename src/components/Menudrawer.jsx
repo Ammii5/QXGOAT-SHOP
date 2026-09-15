@@ -1,4 +1,4 @@
-import { X, Home, LayoutGrid, ShoppingBag, Tag, User, Heart, Package, HelpCircle, Zap } from 'lucide-react'
+import { X, Home, LayoutGrid, ShoppingBag, Tag, User, Zap } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import Backdrop from './Backdrop'
 
@@ -10,14 +10,8 @@ const NAV_LINKS = [
   { key: 'account', label: 'Account', icon: User, tab: 'account' },
 ]
 
-const EXTRA_LINKS = [
-  { key: 'wishlist', label: 'Wishlist', icon: Heart },
-  { key: 'orders', label: 'Order History', icon: Package },
-  { key: 'help', label: 'Help & Support', icon: HelpCircle },
-]
-
 export default function MenuDrawer() {
-  const { menuOpen, setMenuOpen, goToTab, showToast, cartCount } = useApp()
+  const { menuOpen, setMenuOpen, goToTab, cartCount } = useApp()
 
   return (
     <>
@@ -59,23 +53,6 @@ export default function MenuDrawer() {
                   {cartCount} in cart
                 </span>
               )}
-            </button>
-          ))}
-
-          <p className="px-2 pb-2 pt-4 text-[11px] font-bold uppercase tracking-wide text-ink-muted">
-            More
-          </p>
-          {EXTRA_LINKS.map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              onClick={() => {
-                setMenuOpen(false)
-                showToast(`${label} — coming soon`)
-              }}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[14px] font-semibold text-ink transition-colors hover:bg-surface-soft active:scale-[0.98]"
-            >
-              <Icon size={19} strokeWidth={2} className="text-ink-muted" />
-              {label}
             </button>
           ))}
         </div>

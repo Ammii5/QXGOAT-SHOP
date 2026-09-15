@@ -3,6 +3,7 @@ import BottomNav from './components/BottomNav'
 import MenuDrawer from './components/Menudrawer'
 import CartDrawer from './components/Cartdrawer'
 import FilterSheet from './components/Filtersheet'
+import NotificationDrawer from './components/NotificationDrawer'
 import { useApp } from './context/AppContext'
 import { CategoriesPage, DealsPage, HomePage, ShopPage, AccountPage } from './pages/StorePages'
 
@@ -10,6 +11,7 @@ export default function App() {
   const {
     activeTab,
     goToTab,
+    goToCategory,
     addToCart,
     categories,
     shopProducts,
@@ -28,9 +30,24 @@ export default function App() {
   const renderPage = () => {
     switch (activeTab) {
       case 'home':
-        return <HomePage products={products} categories={categories} onAddToCart={addToCart} onShopNow={() => goToTab('shop')} />
+        return (
+          <HomePage
+            products={products}
+            categories={categories}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onAddToCart={addToCart}
+            onShopNow={() => goToTab('shop')}
+            onCategorySelect={goToCategory}
+            onOpenFilters={() => {
+              goToTab('shop')
+              setFilterOpen(true)
+            }}
+            onDeals={() => goToTab('deals')}
+          />
+        )
       case 'categories':
-        return <CategoriesPage categories={categories} onSelectCategory={(categoryId) => goToTab('shop') || null} />
+        return <CategoriesPage categories={categories} onSelectCategory={goToCategory} />
       case 'shop':
         return (
           <ShopPage
@@ -52,7 +69,19 @@ export default function App() {
           />
         )
       default:
-        return <HomePage products={products} categories={categories} onAddToCart={addToCart} onShopNow={() => goToTab('shop')} />
+        return (
+          <HomePage
+            products={products}
+            categories={categories}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onAddToCart={addToCart}
+            onShopNow={() => goToTab('shop')}
+            onCategorySelect={goToCategory}
+            onOpenFilters={() => setFilterOpen(true)}
+            onDeals={() => goToTab('deals')}
+          />
+        )
     }
   }
 
@@ -70,6 +99,7 @@ export default function App() {
       <MenuDrawer />
       <CartDrawer />
       <FilterSheet />
+      <NotificationDrawer />
     </div>
   )
 }

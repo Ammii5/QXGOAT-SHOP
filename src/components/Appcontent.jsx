@@ -3,23 +3,6 @@ import { syncProductsFromApi } from '../data/storeDb'
 
 const AppContext = createContext(null)
 
-const INITIAL_NOTIFICATIONS = [
-  {
-    id: 'n1',
-    title: 'Your order has shipped',
-    body: 'Order #TH-10492 is on its way and arrives Thursday.',
-    time: '2h ago',
-    read: false,
-  },
-  {
-    id: 'n2',
-    title: 'Weekend deal unlocked',
-    body: 'Save up to 30% on Smart Home gadgets, today only.',
-    time: '5h ago',
-    read: false,
-  },
-]
-
 export function AppProvider({ children }) {
   // ---- navigation ----
   const [activeTab, setActiveTabState] = useState('home')
@@ -68,7 +51,7 @@ export function AppProvider({ children }) {
   }, [])
 
   // ---- notifications ----
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS)
+  const [notifications, setNotifications] = useState([])
 
   // ---- overlays / drawers ----
   const [menuOpen, setMenuOpen] = useState(false)
@@ -226,16 +209,6 @@ export function AppProvider({ children }) {
     [sortBy],
   )
 
-  const searchResults = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase()
-    if (!q) return []
-    return allProducts.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        allCategories.find((c) => c.id === (p.categoryId || p.category?.toLowerCase().replace(/\s+/g, '-')))?.name.toLowerCase().includes(q),
-    )
-  }, [searchQuery])
-
   const value = {
     products: allProducts,
     categories: categoriesWithCounts,
@@ -244,7 +217,6 @@ export function AppProvider({ children }) {
     goToCategory,
     searchQuery,
     setSearchQuery,
-    searchResults,
     sortBy,
     setSortBy,
     categoryFilter,

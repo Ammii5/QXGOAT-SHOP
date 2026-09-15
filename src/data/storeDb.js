@@ -8,9 +8,6 @@ export const FILESTORE_LIST_ENDPOINT = `${BASE44_DISPATCHER}/filestoreList`
 
 let productsSyncPromise = null
 
-export const defaultProducts = []
-export const defaultCategories = []
-
 function slugify(value) {
   return String(value || '')
     .trim()
@@ -162,10 +159,3 @@ export async function syncProductsFromApi() {
   return productsSyncPromise
 }
 
-export function getStoredProducts() {
-  return []
-}
-
-export function getStoredCategories() {
-  return []
-}

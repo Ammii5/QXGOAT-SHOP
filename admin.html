@@ -348,6 +348,11 @@
             <input type="hidden" id="productId" />
 
             <div class="field">
+              <label for="categoryId">Category ID</label>
+              <input id="categoryId" type="text" placeholder="courses" required />
+            </div>
+
+            <div class="field">
               <label for="name">Product Name</label>
               <input id="name" type="text" placeholder="Qoutex Coding" required />
             </div>
@@ -386,8 +391,19 @@
                 <input id="badge" type="text" placeholder="BESTSELLER" />
               </div>
               <div class="field">
+                <label for="badgeColor">Badge Color</label>
+                <input id="badgeColor" type="text" placeholder="bg-primary" />
+              </div>
+            </div>
+
+            <div class="inline-grid">
+              <div class="field">
                 <label for="rating">Rating</label>
                 <input id="rating" type="number" step="0.1" min="0" max="5" placeholder="4.9" />
+              </div>
+              <div class="field">
+                <label for="sortOrder">Sort Order</label>
+                <input id="sortOrder" type="number" step="1" placeholder="0" />
               </div>
             </div>
 
@@ -399,6 +415,13 @@
               <div class="field">
                 <label for="image">Image URL</label>
                 <input id="image" type="text" placeholder="https://..." />
+              </div>
+              <div class="field">
+                <label for="active">Visibility</label>
+                <select id="active">
+                  <option value="true">Visible</option>
+                  <option value="false">Hidden</option>
+                </select>
               </div>
             </div>
 
@@ -766,7 +789,7 @@
         try {
           await uploadProductsToBase44();
         } catch (error) {
-          alert(`Saved locally, but Base44 upload failed: ${error.message}`);
+          alert(`Base44 upload failed: ${error.message}`);
         }
       }
 
@@ -842,15 +865,19 @@
         if (!product) return;
 
         document.getElementById('productId').value = product.id;
+        document.getElementById('categoryId').value = product.categoryId || '';
         document.getElementById('name').value = product.name || '';
         document.getElementById('category').value = product.category || 'Courses';
         document.getElementById('description').value = product.description || '';
         document.getElementById('price').value = product.price || 0;
         document.getElementById('discount').value = product.discount || 0;
         document.getElementById('badge').value = product.badge || '';
+        document.getElementById('badgeColor').value = product.badgeColor || 'bg-primary';
         document.getElementById('rating').value = product.rating || 0;
+        document.getElementById('sortOrder').value = product.sortOrder || 0;
         document.getElementById('reviews').value = product.reviews || '';
         document.getElementById('image').value = product.image || '';
+        document.getElementById('active').value = product.active === false ? 'false' : 'true';
         refreshImagePreview(product.image || '');
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -859,6 +886,10 @@
       function resetForm() {
         form.reset();
         document.getElementById('productId').value = '';
+        document.getElementById('categoryId').value = '';
+        document.getElementById('badgeColor').value = 'bg-primary';
+        document.getElementById('sortOrder').value = '0';
+        document.getElementById('active').value = 'true';
         document.getElementById('category').value = 'Courses';
         refreshImagePreview('');
         imageUploadInput.value = '';
@@ -875,15 +906,19 @@
         const id = document.getElementById('productId').value || crypto.randomUUID?.() || `p-${Date.now()}`;
         const product = {
           id,
+          categoryId: document.getElementById('categoryId').value.trim() || document.getElementById('category').value.toLowerCase().replace(/\s+/g, '-'),
           name: document.getElementById('name').value.trim(),
           category: document.getElementById('category').value,
           description: document.getElementById('description').value.trim(),
           price: Number(document.getElementById('price').value || 0),
           discount: Number(document.getElementById('discount').value || 0),
           badge: document.getElementById('badge').value.trim() || 'NEW',
+          badgeColor: document.getElementById('badgeColor').value.trim() || 'bg-primary',
           rating: Number(document.getElementById('rating').value || 0),
+          sortOrder: Number(document.getElementById('sortOrder').value || 0),
           reviews: document.getElementById('reviews').value.trim() || '0',
-          image: document.getElementById('image').value.trim()
+          image: document.getElementById('image').value.trim(),
+          active: document.getElementById('active').value === 'true'
         };
 
         if (!product.name) {
@@ -928,15 +963,19 @@
         if (remoteProducts && remoteProducts.length) {
           products = remoteProducts.map((product) => ({
             id: product.id || product._id || crypto.randomUUID?.() || `p-${Date.now()}`,
+            categoryId: product.categoryId || (product.category || 'Courses').toLowerCase().replace(/\s+/g, '-'),
             name: product.name || 'Untitled product',
             category: product.category || 'Courses',
             description: product.description || 'Digital product',
             price: Number(product.price || 0),
             discount: Number(product.discountPct || product.discount || 0),
             badge: product.badge || 'NEW',
+            badgeColor: product.badgeColor || 'bg-primary',
             rating: Number(product.rating || 0),
+            sortOrder: Number(product.sortOrder || 0),
             reviews: product.reviews || '0',
             image: product.image || '',
+            active: product.active !== false,
           }));
         }
         render();

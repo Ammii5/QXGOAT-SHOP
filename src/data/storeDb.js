@@ -27,6 +27,8 @@ function normalizeProduct(product) {
     name: product.name || 'Untitled product',
     badge: product.badge || 'NEW',
     badgeColor: product.badgeColor || 'bg-primary',
+    sortOrder: Number(product.sortOrder || 0),
+    active: product.active !== false,
     rating: Number(product.rating || 4.5),
     reviews: product.reviews || '0',
     price: Number(product.price || 0),

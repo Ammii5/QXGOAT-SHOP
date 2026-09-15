@@ -35,6 +35,8 @@ export function AppProvider({ children }) {
   const [cartItems, setCartItems] = useState([]) // [{ productId, qty }]
   const [liveProducts, setLiveProducts] = useState([])
   const allProducts = liveProducts
+    .filter((product) => product.active !== false)
+    .sort((a, b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0))
   const allCategories = useMemo(() => {
     const map = new Map()
     for (const product of allProducts) {

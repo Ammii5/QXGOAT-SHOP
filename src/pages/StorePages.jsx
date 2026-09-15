@@ -25,7 +25,7 @@ export function HomePage({
 }) {
   return (
     <>
-      <div className="flex gap-2.5 px-4 pb-1 pt-3.5">
+      <div className="flex gap-2.5 px-4 pb-1 pt-3.5 lg:hidden">
         <label className="flex h-12 flex-1 items-center gap-2.5 rounded-full bg-surface-soft px-4">
           <Search size={17} strokeWidth={2.2} className="shrink-0 text-ink-muted" />
           <input
@@ -45,7 +45,7 @@ export function HomePage({
         </button>
       </div>
 
-      <section className="relative mx-4 mt-2 overflow-hidden rounded-xl2 bg-night px-5 pb-4 pt-6">
+      <section className="relative mx-4 mt-2 overflow-hidden rounded-xl2 bg-night px-5 pb-4 pt-6 sm:mx-6 lg:mx-8 lg:mt-8 lg:px-10 lg:pb-8 lg:pt-10">
         <div
           className="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full opacity-40"
           style={{ background: 'radial-gradient(closest-side, rgba(22,133,255,0.55), transparent)' }}
@@ -121,14 +121,14 @@ export function HomePage({
           </button>
         </div>
 
-        <div className="no-scrollbar snap-x-mandatory flex gap-3.5 overflow-x-auto px-4 pb-2 pt-3.5">
+        <div className="no-scrollbar snap-x-mandatory flex gap-3.5 overflow-x-auto px-4 pb-2 pt-3.5 lg:grid lg:grid-cols-4 lg:gap-5 lg:overflow-visible lg:px-8">
           {products.slice(0, 3).map((product) => (
             <ProductCard key={product.id} product={product} onAddToCart={() => onAddToCart(product)} onOpenProduct={onOpenProduct} />
           ))}
         </div>
       </section>
 
-      <div className="relative mx-4 mt-4 flex h-[156px] justify-between overflow-hidden rounded-xl2 bg-night-alt px-4.5 py-4">
+      <div className="relative mx-4 mt-4 flex h-[156px] justify-between overflow-hidden rounded-xl2 bg-night-alt px-4.5 py-4 sm:mx-6 lg:mx-8 lg:mt-8 lg:h-[190px] lg:px-8 lg:py-7">
         <div className="pointer-events-none absolute -bottom-10 -right-6 h-40 w-40 rounded-full opacity-40" style={{ background: 'radial-gradient(closest-side, rgba(22,133,255,0.5), transparent)' }} />
         <span className="absolute right-4 top-3.5 flex h-[52px] w-[52px] flex-col items-center justify-center rounded-full border-2 border-white/15 bg-primary text-center text-[9px] font-extrabold leading-tight text-white shadow-fab">
           SAVE
@@ -165,7 +165,7 @@ export function CategoriesPage({ categories, onSelectCategory }) {
         <h2 className="text-[20px] font-extrabold text-ink">Browse Categories</h2>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-5">
         {categories.map(({ id, name, icon: Icon = Package, count }) => (
           <button
             key={id}
@@ -210,7 +210,7 @@ export function ShopPage({ products, onAddToCart, onOpenProduct, onOpenFilters, 
           <p className="text-[14px] font-bold text-ink">No products match your search.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-5">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} onAddToCart={() => onAddToCart(product)} onOpenProduct={onOpenProduct} />
           ))}

@@ -14,9 +14,9 @@ export default function ProductCard({ product, onAddToCart, onOpenProduct }) {
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') onOpenProduct(product)
       }}
-      className="w-[164px] shrink-0 snap-start cursor-pointer overflow-hidden rounded-2xl border border-surface-line bg-white shadow-card"
+      className="w-[164px] shrink-0 snap-start cursor-pointer overflow-hidden rounded-2xl border border-surface-line bg-white shadow-card lg:w-full"
     >
-      <div className="relative flex h-[118px] items-center justify-center bg-gradient-to-br from-slate-50 to-slate-200">
+      <div className="relative flex h-[118px] items-center justify-center bg-gradient-to-br from-slate-50 to-slate-200 lg:h-[170px]">
         <span
           className={`absolute left-2 top-2 rounded-full px-2 py-1 text-[8.5px] font-extrabold tracking-wide text-white ${badgeColor}`}
         >

@@ -4,6 +4,7 @@ import MenuDrawer from './components/Menudrawer'
 import CartDrawer from './components/Cartdrawer'
 import FilterSheet from './components/Filtersheet'
 import NotificationDrawer from './components/NotificationDrawer'
+import Footer from './components/Footer'
 import { useApp } from './context/AppContext'
 import { CategoriesPage, DealsPage, HomePage, PaymentPage, ProductDetailPage, ShopPage, AccountPage } from './pages/StorePages'
 
@@ -98,20 +99,21 @@ export default function App() {
   }
 
   return (
-    <div className="relative mx-auto min-h-screen w-full max-w-[428px] overflow-x-hidden bg-white shadow-[0_0_60px_rgba(0,0,0,0.12)] sm:my-8 sm:min-h-0 sm:rounded-[36px]">
+    <div className="relative min-h-screen w-full overflow-x-hidden bg-white lg:bg-transparent">
       <div className="safe-top">
         <Header cartCount={cartCount} notifCount={unreadCount} />
       </div>
 
-      <main>{renderPage()}</main>
+      <main className="mx-auto w-full max-w-shell bg-white shadow-[0_0_60px_rgba(0,0,0,0.06)] lg:min-h-[calc(100vh-72px)] lg:rounded-b-3xl">{renderPage()}</main>
 
-      <div className="h-24" />
+      <div className="h-24 lg:hidden" />
 
       <BottomNav activeTab={activeTab} onChange={goToTab} />
       <MenuDrawer />
       <CartDrawer />
       <FilterSheet />
       <NotificationDrawer />
+      <Footer />
     </div>
   )
 }

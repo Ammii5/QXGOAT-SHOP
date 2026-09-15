@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@QXGOAT Store Admin</title>
+    <style>
+      :root {
+        --bg: #07111f;
+        --panel: #111b2d;
+        --panel-soft: #16243d;
+        --card: #f8fafc;
+        --card-2: #eef4ff;
+        --text: #eaf4ff;
+        --muted: #9bb3d1;
+        --primary: #46a3ff;
+        --primary-2: #7c3aed;
+        --success: #22c55e;
+        --danger: #f87171;
+        --warning: #fbbf24;
+        --border: rgba(255,255,255,0.08);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: linear-gradient(180deg, #07111f 0%, #0b1527 100%);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 32px 20px 60px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 18px 22px;
+        background: rgba(17, 27, 45, 0.9);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        margin-bottom: 24px;
+      }
+
+      .brand {
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+      }
+
+      .brand span { color: var(--primary); }
+
+      .topbar button {
+        border: none;
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: white;
+        font-weight: 700;
+        padding: 12px 18px;
+        border-radius: 12px;
+        cursor: pointer;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 390px 1fr;
+        gap: 22px;
+      }
+
+      .panel {
+        background: rgba(17, 27, 45, 0.88);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+      }
+
+      .panel-header {
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--border);
+        font-weight: 700;
+        font-size: 18px;
+      }
+
+      form {
+        padding: 20px;
+      }
+
+      .field {
+        margin-bottom: 14px;
+      }
+
+      label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      input, select, textarea {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: var(--panel-soft);
+        color: var(--text);
+        padding: 12px 14px;
+        font-size: 14px;
+      }
+
+      textarea {
+        min-height: 82px;
+        resize: vertical;
+      }
+
+      .inline-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .dropzone {
+        border: 1.5px dashed rgba(70, 163, 255, 0.8);
+        border-radius: 14px;
+        min-height: 120px;
+        background: rgba(15, 23, 42, 0.7);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 16px;
+        text-align: center;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .dropzone:hover,
+      .dropzone.dragover {
+        border-color: rgba(34, 197, 94, 0.9);
+        background: rgba(15, 118, 110, 0.12);
+      }
+
+      .dropzone img {
+        max-width: 100%;
+        max-height: 112px;
+        border-radius: 12px;
+        object-fit: cover;
+        display: none;
+      }
+
+      .dropzone-label {
+        font-size: 13px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .btn {
+        border: none;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+      }
+
+      .btn:hover { opacity: 0.96; }
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: white;
+      }
+
+      .btn-secondary {
+        background: rgba(255,255,255,0.04);
+        color: var(--text);
+        border: 1px solid var(--border);
+      }
+
+      .btn-danger {
+        background: rgba(248, 113, 113, 0.12);
+        color: #fecaca;
+        border: 1px solid rgba(248,113,113,0.25);
+      }
+
+      .content {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .stat-card {
+        background: rgba(17,27,45,0.88);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 18px 16px;
+      }
+
+      .stat-card .label {
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .stat-card .value {
+        font-size: 30px;
+        font-weight: 800;
+        margin-top: 8px;
+      }
+
+      .product-list {
+        background: rgba(17, 27, 45, 0.88);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+      }
+
+      .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        padding: 18px;
+      }
+
+      .product-card {
+        background: linear-gradient(180deg, #f8fafc, #edf2ff);
+        border-radius: 16px;
+        padding: 14px;
+        color: #0f172a;
+        box-shadow: 0 10px 28px rgba(15,23,42,0.1);
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 5px 8px;
+        background: rgba(70,163,255,0.12);
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 800;
+        color: #0f172a;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .product-card h3 {
+        margin: 12px 0 8px;
+        font-size: 18px;
+      }
+
+      .meta {
+        color: #475569;
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+
+      .price-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+      }
+
+      .price {
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .product-card .card-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .tiny-btn {
+        border: none;
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .tiny-btn.edit { background: #dbeafe; color: #1d4ed8; }
+      .tiny-btn.delete { background: #fee2e2; color: #b91c1c; }
+
+      .json-box {
+        background: rgba(17,27,45,0.88);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+      }
+
+      .json-box textarea {
+        width: 100%;
+        min-height: 260px;
+        background: #0a1422;
+        border: none;
+        padding: 20px;
+        color: #dbeafe;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .empty {
+        padding: 22px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      @media (max-width: 980px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .stats {
+          grid-template-columns: repeat(2, minmax(0,1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="topbar">
+        <div class="brand"><span>@QXGOAT</span> Store Admin</div>
+        <button id="exportBtn" type="button">Export JSON</button>
+      </header>
+
+      <div class="layout">
+        <aside class="panel">
+          <div class="panel-header">Add / Edit Product</div>
+          <form id="productForm">
+            <input type="hidden" id="productId" />
+
+            <div class="field">
+              <label for="name">Product Name</label>
+              <input id="name" type="text" placeholder="Qoutex Coding" required />
+            </div>
+
+            <div class="field">
+              <label for="category">Category</label>
+              <select id="category">
+                <option value="Courses">Courses</option>
+                <option value="Qoutex Coding">Qoutex Coding</option>
+                <option value="Exness Coding">Exness Coding</option>
+                <option value="Trading Bot">Trading Bot</option>
+                <option value="Wallets">Wallets</option>
+                <option value="Market Tools">Market Tools</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="description">Description</label>
+              <textarea id="description" placeholder="Describe what the customer gets..."></textarea>
+            </div>
+
+            <div class="inline-grid">
+              <div class="field">
+                <label for="price">Price ($)</label>
+                <input id="price" type="number" step="0.01" min="0" placeholder="299.99" required />
+              </div>
+              <div class="field">
+                <label for="discount">Discount (%)</label>
+                <input id="discount" type="number" step="1" min="0" max="100" placeholder="15" />
+              </div>
+            </div>
+
+            <div class="inline-grid">
+              <div class="field">
+                <label for="badge">Badge</label>
+                <input id="badge" type="text" placeholder="BESTSELLER" />
+              </div>
+              <div class="field">
+                <label for="rating">Rating</label>
+                <input id="rating" type="number" step="0.1" min="0" max="5" placeholder="4.9" />
+              </div>
+            </div>
+
+            <div class="inline-grid">
+              <div class="field">
+                <label for="reviews">Reviews</label>
+                <input id="reviews" type="text" placeholder="1.5K+" />
+              </div>
+              <div class="field">
+                <label for="image">Image URL</label>
+                <input id="image" type="text" placeholder="https://..." />
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Product Media</label>
+              <div id="imageDropZone" class="dropzone" tabindex="0" aria-label="Upload product media">
+                <img id="imagePreview" alt="Product preview" />
+                <div id="dropzoneLabel" class="dropzone-label">Drag & drop image here or click to browse</div>
+                <input id="imageUpload" type="file" accept="image/*" hidden />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-primary" type="submit">Save Product</button>
+              <button class="btn btn-secondary" type="button" id="resetBtn">Reset</button>
+            </div>
+          </form>
+        </aside>
+
+        <main class="content">
+          <section class="stats">
+            <div class="stat-card">
+              <div class="label">Products</div>
+              <div class="value" id="totalProducts">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Categories</div>
+              <div class="value" id="totalCategories">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Revenue</div>
+              <div class="value" id="totalRevenue">$0</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Avg Rating</div>
+              <div class="value" id="avgRating">0.0</div>
+            </div>
+          </section>
+
+          <section class="product-list">
+            <div class="panel-header">Products</div>
+            <div id="productGrid" class="product-grid"></div>
+          </section>
+
+          <section class="json-box">
+            <div class="panel-header">Database JSON</div>
+            <textarea id="jsonOutput" spellcheck="false"></textarea>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script>
+      const STORAGE_KEY = 'qxgoat_store_products';
+      const BASE44_API_KEY = '9317e9c78aca4531a58fc6301fb4ff97d9f40b41224648d2978d48cf7a0b10bf';
+      const BASE44_DISPATCHER = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? '/base44'
+        : 'https://base44-dispatcher-production.base44.workers.dev/run';
+      const BASE44_UPLOAD_ENDPOINT = `${BASE44_DISPATCHER}/filestoreUpload`;
+      const BASE44_LIST_ENDPOINT = `${BASE44_DISPATCHER}/filestoreList`;
+      const FILESTORE_CONFIG = {
+        ai_connection: {
+          description: 'Pull content from any website into your FileStore database',
+          steps: [
+            {
+              action: 'ingest_from_website',
+              method: 'POST',
+              endpoint: BASE44_UPLOAD_ENDPOINT,
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': BASE44_API_KEY
+              },
+              body: {
+                file_url: 'https://any-website.com/asset.png',
+                name: 'asset.png',
+                tags: 'ai-ingest'
+              }
+            },
+            {
+              action: 'list_stored_files',
+              method: 'POST',
+              endpoint: BASE44_LIST_ENDPOINT,
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': BASE44_API_KEY
+              },
+              body: {
+                limit: 50
+              }
+            }
+          ]
+        }
+      };
+
+      const defaultProducts = [
+        {
+          id: crypto.randomUUID ? crypto.randomUUID() : 'p1',
+          name: 'Courses',
+          category: 'Courses',
+          description: 'Learn how to build and scale digital trading systems with step-by-step market-ready lessons.',
+          price: 149.99,
+          discount: 20,
+          badge: 'TOP PICK',
+          rating: 4.9,
+          reviews: '2.4K+',
+          image: ''
+        },
+        {
+          id: crypto.randomUUID ? crypto.randomUUID() : 'p2',
+          name: 'Create Your Own Qoutex Coding',
+          category: 'Qoutex Coding',
+          description: 'Custom Qoutex coding setup built for your trading workflow and client experience.',
+          price: 499.99,
+          discount: 15,
+          badge: 'BUNDLE',
+          rating: 4.8,
+          reviews: '1.3K+',
+          image: ''
+        },
+        {
+          id: crypto.randomUUID ? crypto.randomUUID() : 'p3',
+          name: 'Create Your Own Exness Coding',
+          category: 'Exness Coding',
+          description: 'Build a custom Exness-coded solution designed around your brokerage and automation strategy.',
+          price: 599.99,
+          discount: 18,
+          badge: 'PREMIUM',
+          rating: 4.9,
+          reviews: '1.7K+',
+          image: ''
+        },
+        {
+          id: crypto.randomUUID ? crypto.randomUUID() : 'p4',
+          name: 'Advanced Trading Bot Creation',
+          category: 'Trading Bot',
+          description: 'Professional-grade bot development for traders who need automation and execution power.',
+          price: 799.99,
+          discount: 25,
+          badge: 'HOT',
+          rating: 4.8,
+          reviews: '980+',
+          image: ''
+        },
+        {
+          id: crypto.randomUUID ? crypto.randomUUID() : 'p5',
+          name: 'Create Your Own Trading Bot',
+          category: 'Trading Bot',
+          description: 'A custom-built bot package that you can tailor to your exact trading logic.',
+          price: 399.99,
+          discount: 12,
+          badge: 'POPULAR',
+          rating: 4.7,
+          reviews: '1.1K+',
+          image: ''
+        },
+        {
+          id: crypto.randomUUID ? crypto.randomUUID() : 'p6',
+          name: 'Qoutex Coding',
+          category: 'Qoutex Coding',
+          description: 'A ready-made Qoutex coding solution for fast deployment and easier trading operations.',
+          price: 249.99,
+          discount: 10,
+          badge: 'NEW',
+          rating: 4.8,
+          reviews: '890+',
+          image: ''
+        },
+        {
+          id: crypto.randomUUID ? crypto.randomUUID() : 'p7',
+          name: 'Exness Coding',
+          category: 'Exness Coding',
+          description: 'Efficient Exness code solution designed for activation, execution flow, and user onboarding.',
+          price: 299.99,
+          discount: 17,
+          badge: 'BESTSELLER',
+          rating: 4.9,
+          reviews: '1.5K+',
+          image: ''
+        },
+        {
+          id: crypto.randomUUID ? crypto.randomUUID() : 'p8',
+          name: 'Binanace Wallets',
+          category: 'Wallets',
+          description: 'Secure wallet products for digital trading and asset management workflows.',
+          price: 129.99,
+          discount: 14,
+          badge: 'SECURE',
+          rating: 4.6,
+          reviews: '780+',
+          image: ''
+        }
+      ];
+
+      let products = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || defaultProducts;
+
+      const form = document.getElementById('productForm');
+      const productGrid = document.getElementById('productGrid');
+      const jsonOutput = document.getElementById('jsonOutput');
+      const exportBtn = document.getElementById('exportBtn');
+      const resetBtn = document.getElementById('resetBtn');
+      const imageDropZone = document.getElementById('imageDropZone');
+      const imageUploadInput = document.getElementById('imageUpload');
+      const imagePreview = document.getElementById('imagePreview');
+      const imageUrlInput = document.getElementById('image');
+      const dropzoneLabel = document.getElementById('dropzoneLabel');
+
+      function refreshImagePreview(url) {
+        if (!url) {
+          imagePreview.src = '';
+          imagePreview.style.display = 'none';
+          dropzoneLabel.textContent = 'Drag & drop image here or click to browse';
+          return;
+        }
+
+        imagePreview.src = url;
+        imagePreview.style.display = 'block';
+        dropzoneLabel.textContent = 'Image ready';
+      }
+
+      function applySelectedImage(file) {
+        if (!file || !file.type.startsWith('image/')) {
+          alert('Please choose a valid image file.');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result;
+          imageUrlInput.value = dataUrl;
+          refreshImagePreview(dataUrl);
+        };
+        reader.readAsDataURL(file);
+      }
+
+      imageUploadInput.addEventListener('change', (event) => {
+        const [file] = event.target.files || [];
+        applySelectedImage(file);
+      });
+
+      ['dragenter', 'dragover'].forEach((eventName) => {
+        imageDropZone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          imageDropZone.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'drop'].forEach((eventName) => {
+        imageDropZone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          imageDropZone.classList.remove('dragover');
+        });
+      });
+
+      imageDropZone.addEventListener('drop', (event) => {
+        const [file] = event.dataTransfer.files || [];
+        applySelectedImage(file);
+      });
+
+      imageDropZone.addEventListener('click', () => imageUploadInput.click());
+      imageDropZone.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          imageUploadInput.click();
+        }
+      });
+
+      function buildProductPayload() {
+        return {
+          products,
+          meta: {
+            store: '@QXGOAT Store',
+            updatedAt: new Date().toISOString(),
+            database: FILESTORE_CONFIG
+          }
+        };
+      }
+
+      function encodeDataUrl(text) {
+        const bytes = new TextEncoder().encode(text);
+        let binary = '';
+        bytes.forEach((byte) => {
+          binary += String.fromCharCode(byte);
+        });
+        return `data:application/json;base64,${btoa(binary)}`;
+      }
+
+      async function loadProductsFromBase44() {
+        try {
+          const response = await fetch(BASE44_LIST_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': BASE44_API_KEY
+            },
+            body: JSON.stringify({ limit: 50 })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Base44 list failed: ${response.status}`);
+          }
+
+          const json = await response.json();
+          const files = Array.isArray(json) ? json : json.files || json.items || json.data || [];
+          const targetFile = files.find((file) => {
+            const name = (file.name || file.filename || file.title || '').toLowerCase();
+            return name.includes('qxgoat') || name.includes('products') || name.includes('store');
+          });
+
+          if (!targetFile) return null;
+
+          const fileUrl = targetFile.url || targetFile.file_url || targetFile.downloadUrl || targetFile.download_url || targetFile.path;
+          if (!fileUrl) return null;
+
+          const fileResponse = await fetch(fileUrl);
+          if (!fileResponse.ok) return null;
+          const remoteData = await fileResponse.json();
+
+          if (Array.isArray(remoteData)) return remoteData;
+          if (remoteData && Array.isArray(remoteData.products)) return remoteData.products;
+          if (remoteData && Array.isArray(remoteData.data)) return remoteData.data;
+          return null;
+        } catch (error) {
+          console.warn('Could not load products from Base44', error);
+          return null;
+        }
+      }
+
+      async function uploadProductsToBase44() {
+        const payload = buildProductPayload();
+        const json = JSON.stringify(payload, null, 2);
+        const dataUrl = encodeDataUrl(json);
+
+        try {
+          const response = await fetch(BASE44_UPLOAD_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-api-key': BASE44_API_KEY
+            },
+            body: JSON.stringify({
+              file_url: dataUrl,
+              name: 'qxgoat-products.json',
+              tags: 'qxgoat-store'
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Base44 upload failed: ${response.status}`);
+          }
+
+          return await response.json();
+        } catch (error) {
+          console.warn('Base44 upload failed, saved locally instead.', error);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+          return null;
+        }
+      }
+
+      function saveProducts() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+        render();
+      }
+
+      function getEffectivePrice(product) {
+        const base = Number(product.price || 0);
+        const discount = Number(product.discount || 0);
+        return discount > 0 ? base * (1 - discount / 100) : base;
+      }
+
+      function renderStats() {
+        document.getElementById('totalProducts').textContent = products.length;
+        const categories = [...new Set(products.map((p) => p.category).filter(Boolean))];
+        document.getElementById('totalCategories').textContent = categories.length;
+
+        const total = products.reduce((sum, p) => sum + getEffectivePrice(p), 0);
+        document.getElementById('totalRevenue').textContent = `$${total.toFixed(2)}`;
+
+        const avg = products.length
+          ? products.reduce((sum, p) => sum + Number(p.rating || 0), 0) / products.length
+          : 0;
+        document.getElementById('avgRating').textContent = avg.toFixed(1);
+      }
+
+      function renderCards() {
+        if (!products.length) {
+          productGrid.innerHTML = '<div class="empty">No products yet. Add your first product.</div>';
+          return;
+        }
+
+        productGrid.innerHTML = products
+          .map((product) => {
+            const price = getEffectivePrice(product);
+            return `
+              <article class="product-card">
+                <span class="badge">${product.badge || 'PRODUCT'}</span>
+                <h3>${product.name}</h3>
+                <div class="meta">${product.category} • ${product.reviews || '0'} reviews</div>
+                <div>${product.description || 'No description provided.'}</div>
+                <div class="price-row">
+                  <div class="price">$${price.toFixed(2)}</div>
+                  <div style="font-size:12px; color:#475569; font-weight:700;">★ ${Number(product.rating || 0).toFixed(1)}</div>
+                </div>
+                <div class="card-actions">
+                  <button class="tiny-btn edit" type="button" data-edit="${product.id}">Edit</button>
+                  <button class="tiny-btn delete" type="button" data-delete="${product.id}">Delete</button>
+                </div>
+              </article>
+            `;
+          })
+          .join('');
+
+        productGrid.querySelectorAll('[data-edit]').forEach((btn) => {
+          btn.addEventListener('click', () => fillForm(btn.dataset.edit));
+        });
+
+        productGrid.querySelectorAll('[data-delete]').forEach((btn) => {
+          btn.addEventListener('click', () => deleteProduct(btn.dataset.delete));
+        });
+      }
+
+      function refreshJSON() {
+        jsonOutput.value = JSON.stringify(buildProductPayload(), null, 2);
+      }
+
+      function render() {
+        renderStats();
+        renderCards();
+        refreshJSON();
+      }
+
+      function fillForm(id) {
+        const product = products.find((item) => item.id === id);
+        if (!product) return;
+
+        document.getElementById('productId').value = product.id;
+        document.getElementById('name').value = product.name || '';
+        document.getElementById('category').value = product.category || 'Courses';
+        document.getElementById('description').value = product.description || '';
+        document.getElementById('price').value = product.price || 0;
+        document.getElementById('discount').value = product.discount || 0;
+        document.getElementById('badge').value = product.badge || '';
+        document.getElementById('rating').value = product.rating || 0;
+        document.getElementById('reviews').value = product.reviews || '';
+        document.getElementById('image').value = product.image || '';
+        refreshImagePreview(product.image || '');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function resetForm() {
+        form.reset();
+        document.getElementById('productId').value = '';
+        document.getElementById('category').value = 'Courses';
+        refreshImagePreview('');
+        imageUploadInput.value = '';
+      }
+
+      function deleteProduct(id) {
+        products = products.filter((product) => product.id !== id);
+        saveProducts();
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const id = document.getElementById('productId').value || crypto.randomUUID?.() || `p-${Date.now()}`;
+        const product = {
+          id,
+          name: document.getElementById('name').value.trim(),
+          category: document.getElementById('category').value,
+          description: document.getElementById('description').value.trim(),
+          price: Number(document.getElementById('price').value || 0),
+          discount: Number(document.getElementById('discount').value || 0),
+          badge: document.getElementById('badge').value.trim() || 'NEW',
+          rating: Number(document.getElementById('rating').value || 0),
+          reviews: document.getElementById('reviews').value.trim() || '0',
+          image: document.getElementById('image').value.trim()
+        };
+
+        if (!product.name) {
+          alert('Product name is required.');
+          return;
+        }
+
+        const index = products.findIndex((item) => item.id === id);
+        if (index >= 0) {
+          products[index] = product;
+        } else {
+          products.unshift(product);
+        }
+
+        saveProducts();
+        resetForm();
+      });
+
+      resetBtn.addEventListener('click', resetForm);
+
+      exportBtn.addEventListener('click', async () => {
+        const payload = buildProductPayload();
+        const json = JSON.stringify(payload, null, 2);
+
+        try {
+          await uploadProductsToBase44();
+        } catch (error) {
+          console.warn('Remote sync failed', error);
+        }
+
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'qxgoat-products.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      async function bootstrap() {
+        const remoteProducts = await loadProductsFromBase44();
+        if (remoteProducts && remoteProducts.length) {
+          products = remoteProducts.map((product) => ({
+            id: product.id || product._id || crypto.randomUUID?.() || `p-${Date.now()}`,
+            name: product.name || 'Untitled product',
+            category: product.category || 'Courses',
+            description: product.description || 'Digital product',
+            price: Number(product.price || 0),
+            discount: Number(product.discountPct || product.discount || 0),
+            badge: product.badge || 'NEW',
+            rating: Number(product.rating || 0),
+            reviews: product.reviews || '0',
+            image: product.image || '',
+          }));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+        }
+        render();
+      }
+
+      bootstrap();
+    </script>
+  </body>
+</html>

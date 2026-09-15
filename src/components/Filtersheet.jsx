@@ -1,111 +1,119 @@
-import { X } from 'lucide-react'
+import { SlidersHorizontal } from 'lucide-react'
 import { useApp } from '../context/AppContext'
-import Backdrop from './Backdrop'
+import { categoryIcon, cx } from '../lib/ui'
+import { OverlayHeading, Sheet } from './Overlay'
+import { Button } from './ui'
 
-const SORT_OPTIONS = [
+export const SORT_OPTIONS = [
   { value: 'popularity', label: 'Popularity' },
-  { value: 'price-asc', label: 'Price: Low to High' },
-  { value: 'price-desc', label: 'Price: High to Low' },
-  { value: 'rating-desc', label: 'Top Rated' },
+  { value: 'price-asc', label: 'Price: low to high' },
+  { value: 'price-desc', label: 'Price: high to low' },
+  { value: 'rating-desc', label: 'Top rated' },
 ]
 
-export default function FilterSheet() {
-  const {
-    filterOpen,
-    setFilterOpen,
-    sortBy,
-    setSortBy,
-    categories,
-    categoryFilter,
-    toggleCategoryFilter,
-    resetFilters,
-  } = useApp()
+function Chip({ active, children, ...props }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      className={cx(
+        'inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm font-semibold tracking-tight',
+        'transition-all duration-200 ease-spring active:scale-95',
+        active
+          ? 'border-primary bg-primary text-white shadow-cta'
+          : 'border-surface-line bg-surface text-ink-soft hover:border-primary-300 hover:bg-primary-50 hover:text-primary',
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  )
+}
+
+/**
+ * Shared between the mobile sheet and the desktop shop sidebar so both
+ * surfaces stay in sync automatically.
+ */
+export function FilterControls({ className }) {
+  const { sortBy, setSortBy, categories, categoryFilter, toggleCategoryFilter } = useApp()
 
   return (
-    <>
-      {filterOpen && <Backdrop onClick={() => setFilterOpen(false)} />}
-
-      <div
-        className={`fixed bottom-0 left-1/2 z-40 w-full max-w-[428px] -translate-x-1/2 transform rounded-t-[26px] bg-white shadow-2xl transition-transform duration-300 ${
-          filterOpen ? 'translate-y-0' : 'translate-y-full'
-        }`}
-      >
-        <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-surface-line" />
-
-        <div className="flex items-center justify-between px-5 pb-1 pt-3">
-          <h3 className="text-[16px] font-extrabold text-ink">Sort &amp; Filter</h3>
-          <button
-            aria-label="Close filters"
-            onClick={() => setFilterOpen(false)}
-            className="flex h-8 w-8 items-center justify-center rounded-full text-ink-muted active:scale-90"
-          >
-            <X size={19} />
-          </button>
-        </div>
-
-        <div className="px-5 pb-2 pt-3">
-          <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-ink-muted">Sort by</p>
-          <div className="flex flex-wrap gap-2">
-            {SORT_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setSortBy(opt.value)}
-                className={`rounded-full border px-3.5 py-2 text-[12px] font-semibold transition-colors active:scale-95 ${
-                  sortBy === opt.value
-                    ? 'border-primary bg-primary text-white'
-                    : 'border-surface-line bg-white text-ink'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="px-5 pb-2 pt-4">
-          <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-ink-muted">Category</p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => toggleCategoryFilter(null)}
-              className={`rounded-full border px-3.5 py-2 text-[12px] font-semibold transition-colors active:scale-95 ${
-                categoryFilter === null
-                  ? 'border-primary bg-primary text-white'
-                  : 'border-surface-line bg-white text-ink'
-              }`}
+    <div className={cx('space-y-6', className)}>
+      <fieldset>
+        <legend className="mb-3 text-2xs font-bold tracking-tight text-ink-faint">Sort by</legend>
+        <div className="flex flex-wrap gap-2">
+          {SORT_OPTIONS.map((option) => (
+            <Chip
+              key={option.value}
+              active={sortBy === option.value}
+              onClick={() => setSortBy(option.value)}
             >
-              All
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => toggleCategoryFilter(cat.id)}
-                className={`rounded-full border px-3.5 py-2 text-[12px] font-semibold transition-colors active:scale-95 ${
-                  categoryFilter === cat.id
-                    ? 'border-primary bg-primary text-white'
-                    : 'border-surface-line bg-white text-ink'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
+              {option.label}
+            </Chip>
+          ))}
         </div>
+      </fieldset>
 
-        <div className="safe-bottom flex gap-3 px-5 pb-4 pt-5">
-          <button
-            onClick={resetFilters}
-            className="flex-1 rounded-full border border-surface-line py-3 text-[12.5px] font-extrabold text-ink active:scale-[0.98]"
-          >
-            RESET
-          </button>
-          <button
-            onClick={() => setFilterOpen(false)}
-            className="flex-1 rounded-full bg-primary py-3 text-[12.5px] font-extrabold text-white shadow-cta active:scale-[0.98]"
-          >
-            APPLY
-          </button>
+      <fieldset>
+        <legend className="mb-3 text-2xs font-bold tracking-tight text-ink-faint">Category</legend>
+        <div className="flex flex-wrap gap-2">
+          <Chip active={categoryFilter === null} onClick={() => toggleCategoryFilter(null)}>
+            All products
+          </Chip>
+          {categories.map((category) => {
+            const Icon = categoryIcon(category)
+            const active = categoryFilter === category.id
+            return (
+              <Chip
+                key={category.id}
+                active={active}
+                onClick={() => toggleCategoryFilter(category.id)}
+              >
+                <Icon size={14} strokeWidth={2.2} />
+                {category.name}
+                <span className={cx('tnum text-2xs', active ? 'text-white/70' : 'text-ink-faint')}>
+                  {category.count}
+                </span>
+              </Chip>
+            )
+          })}
         </div>
+      </fieldset>
+    </div>
+  )
+}
+
+export default function FilterSheet() {
+  const { filterOpen, setFilterOpen, resetFilters, activeFilterCount, shopProducts } = useApp()
+  const close = () => setFilterOpen(false)
+
+  return (
+    <Sheet open={filterOpen} onClose={close} labelledBy="filter-sheet-title">
+      <OverlayHeading
+        icon={SlidersHorizontal}
+        title="Sort and filter"
+        caption={
+          activeFilterCount
+            ? `${activeFilterCount} ${activeFilterCount === 1 ? 'filter' : 'filters'} applied`
+            : 'Showing everything'
+        }
+        onClose={close}
+        closeLabel="Close filters"
+      />
+
+      <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">
+        <FilterControls />
       </div>
-    </>
+
+      <div className="flex gap-3 border-t border-surface-line bg-surface-soft px-5 py-4 sm:px-6">
+        <Button variant="secondary" size="lg" className="flex-1" onClick={resetFilters}>
+          Reset
+        </Button>
+        <Button size="lg" className="flex-1" onClick={close}>
+          Show {shopProducts.length} {shopProducts.length === 1 ? 'result' : 'results'}
+        </Button>
+      </div>
+      <div className="safe-bottom" />
+    </Sheet>
   )
 }

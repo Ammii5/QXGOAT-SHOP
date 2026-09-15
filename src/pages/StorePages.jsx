@@ -301,6 +301,57 @@ export function ProductDetailPage({ product, onBack, onAddToCart }) {
   )
 }
 
+export function PaymentPage({ payment, onBack }) {
+  if (!payment) return null
+
+  return (
+    <section className="px-4 py-5">
+      <button onClick={onBack} className="mb-4 flex items-center gap-2 text-[12px] font-bold text-ink-muted">
+        <ArrowLeft size={16} /> Back to shop
+      </button>
+
+      <div className="overflow-hidden rounded-3xl border border-surface-line bg-white shadow-card">
+        <div className="bg-night px-5 py-6 text-white">
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary-light">Complete your order</p>
+          <h1 className="mt-2 text-[25px] font-extrabold">Payment methods</h1>
+          <p className="mt-2 text-[12px] text-slate-300">Send payment, then share the screenshot for order confirmation.</p>
+        </div>
+
+        <div className="space-y-3 p-5">
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+            <p className="text-[11px] font-extrabold uppercase tracking-wide text-emerald-700">Easypaisa account</p>
+            <p className="mt-2 text-[18px] font-extrabold text-ink">03420599386</p>
+            <p className="mt-1 text-[12px] font-semibold text-ink-muted">Name: HAFEEZAN</p>
+          </div>
+
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-[11px] font-extrabold uppercase tracking-wide text-amber-700">Binance</p>
+            <p className="mt-2 text-[13px] font-bold text-ink">Binance ID: 773356324</p>
+            <p className="mt-1 break-all text-[12px] font-semibold text-ink-muted">TRC20: TAZChp6cFZoUM4gNRHMHwueuHNye9vifFw</p>
+          </div>
+
+          <div className="rounded-2xl bg-surface-soft p-4">
+            <div className="flex items-center justify-between text-[13px] font-bold text-ink">
+              <span>Order total</span>
+              <span className="text-[20px]">${payment.total.toFixed(2)}</span>
+            </div>
+            <p className="mt-3 text-[12px] leading-relaxed text-ink-muted">After payment, send screenshot on WhatsApp or Telegram for confirmation.</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            <a href="https://wa.me/923420599386" target="_blank" rel="noreferrer" className="flex items-center justify-center rounded-full bg-[#25D366] py-3 text-[12px] font-extrabold text-white">
+              WhatsApp
+            </a>
+            <a href="https://t.me/QXGOAT" target="_blank" rel="noreferrer" className="flex items-center justify-center rounded-full bg-[#229ED9] py-3 text-[12px] font-extrabold text-white">
+              Telegram @QXGOAT
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export function AccountPage({ notifications, unreadCount, onOpenNotifications }) {
   return (
     <section className="px-4 py-5">

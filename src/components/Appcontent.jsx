@@ -7,6 +7,7 @@ export function AppProvider({ children }) {
   // ---- navigation ----
   const [activeTab, setActiveTabState] = useState('home')
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [pendingPayment, setPendingPayment] = useState(null)
 
   // ---- search ----
   const [searchQuery, setSearchQuery] = useState('')
@@ -125,9 +126,16 @@ export function AppProvider({ children }) {
   }
 
   function checkout() {
+    if (!cartDetailed.length) return
+    setPendingPayment({
+      items: cartDetailed,
+      total: cartTotal,
+      createdAt: new Date().toISOString(),
+    })
     setCartItems([])
     setCartOpen(false)
-    showToast('Order placed! Thanks for shopping with @QXGOAT Store.')
+    setActiveTabState('payment')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function markAllNotificationsRead() {
@@ -222,6 +230,7 @@ export function AppProvider({ children }) {
     products: allProducts,
     selectedProduct,
     openProduct,
+    pendingPayment,
     categories: categoriesWithCounts,
     activeTab,
     goToTab,

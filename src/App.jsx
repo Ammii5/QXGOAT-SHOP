@@ -5,7 +5,7 @@ import CartDrawer from './components/Cartdrawer'
 import FilterSheet from './components/Filtersheet'
 import NotificationDrawer from './components/NotificationDrawer'
 import { useApp } from './context/AppContext'
-import { CategoriesPage, DealsPage, HomePage, ProductDetailPage, ShopPage, AccountPage } from './pages/StorePages'
+import { CategoriesPage, DealsPage, HomePage, PaymentPage, ProductDetailPage, ShopPage, AccountPage } from './pages/StorePages'
 
 export default function App() {
   const {
@@ -27,6 +27,7 @@ export default function App() {
     products,
     selectedProduct,
     openProduct,
+    pendingPayment,
   } = useApp()
 
   const renderPage = () => {
@@ -68,6 +69,8 @@ export default function App() {
         return selectedProduct ? (
           <ProductDetailPage product={selectedProduct} onBack={() => goToTab('shop')} onAddToCart={addToCart} />
         ) : null
+      case 'payment':
+        return <PaymentPage payment={pendingPayment} onBack={() => goToTab('shop')} />
       case 'account':
         return (
           <AccountPage

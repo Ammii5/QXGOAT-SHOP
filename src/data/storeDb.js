@@ -4,7 +4,9 @@ export const STORAGE_KEY = 'qxgoat_store_products'
 export const BASE44_API_KEY = import.meta.env.VITE_FILESTORE_API_KEY || ''
 export const BASE44_DISPATCHER = import.meta.env.DEV
   ? '/base44'
-  : import.meta.env.VITE_FILESTORE_API_URL || 'https://base44-dispatcher-production.base44.workers.dev/run'
+  : import.meta.env.VITE_FILESTORE_API_URL?.includes('workers.dev')
+    ? 'https://sweet-sync-your-stack.base44.app/functions'
+    : import.meta.env.VITE_FILESTORE_API_URL || 'https://sweet-sync-your-stack.base44.app/functions'
 export const FILESTORE_UPLOAD_ENDPOINT = `${BASE44_DISPATCHER}/filestoreUpload`
 export const FILESTORE_LIST_ENDPOINT = `${BASE44_DISPATCHER}/filestoreList`
 

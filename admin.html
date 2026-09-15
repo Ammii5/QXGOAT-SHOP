@@ -751,15 +751,19 @@
 
           return await response.json();
         } catch (error) {
-          console.warn('Base44 upload failed, saved locally instead.', error);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-          return null;
+          console.error('Base44 upload failed.', error);
+          throw error;
         }
       }
 
-      function saveProducts() {
+      async function saveProducts() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
         render();
+        try {
+          await uploadProductsToBase44();
+        } catch (error) {
+          alert(`Saved locally, but Base44 upload failed: ${error.message}`);
+        }
       }
 
       function getEffectivePrice(product) {

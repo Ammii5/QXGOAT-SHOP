@@ -5,7 +5,7 @@ import CartDrawer from './components/Cartdrawer'
 import FilterSheet from './components/Filtersheet'
 import NotificationDrawer from './components/NotificationDrawer'
 import { useApp } from './context/AppContext'
-import { CategoriesPage, DealsPage, HomePage, ShopPage, AccountPage } from './pages/StorePages'
+import { CategoriesPage, DealsPage, HomePage, ProductDetailPage, ShopPage, AccountPage } from './pages/StorePages'
 
 export default function App() {
   const {
@@ -25,6 +25,8 @@ export default function App() {
     setNotifOpen,
     cartCount,
     products,
+    selectedProduct,
+    openProduct,
   } = useApp()
 
   const renderPage = () => {
@@ -37,6 +39,7 @@ export default function App() {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             onAddToCart={addToCart}
+            onOpenProduct={openProduct}
             onShopNow={() => goToTab('shop')}
             onCategorySelect={goToCategory}
             onOpenFilters={() => {
@@ -53,13 +56,18 @@ export default function App() {
           <ShopPage
             products={shopProducts}
             onAddToCart={addToCart}
+            onOpenProduct={openProduct}
             onOpenFilters={() => setFilterOpen(true)}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
           />
         )
       case 'deals':
-        return <DealsPage products={dealProducts} onAddToCart={addToCart} effectivePrice={effectivePrice} />
+        return <DealsPage products={dealProducts} onAddToCart={addToCart} onOpenProduct={openProduct} effectivePrice={effectivePrice} />
+      case 'product':
+        return selectedProduct ? (
+          <ProductDetailPage product={selectedProduct} onBack={() => goToTab('shop')} onAddToCart={addToCart} />
+        ) : null
       case 'account':
         return (
           <AccountPage
@@ -76,6 +84,7 @@ export default function App() {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             onAddToCart={addToCart}
+            onOpenProduct={openProduct}
             onShopNow={() => goToTab('shop')}
             onCategorySelect={goToCategory}
             onOpenFilters={() => setFilterOpen(true)}

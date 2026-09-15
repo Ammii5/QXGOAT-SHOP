@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  ArrowLeft,
   Gift,
   Search,
   Star,
@@ -16,6 +17,7 @@ export function HomePage({
   searchQuery,
   onSearchChange,
   onAddToCart,
+  onOpenProduct,
   onShopNow,
   onCategorySelect,
   onOpenFilters,
@@ -121,7 +123,7 @@ export function HomePage({
 
         <div className="no-scrollbar snap-x-mandatory flex gap-3.5 overflow-x-auto px-4 pb-2 pt-3.5">
           {products.slice(0, 3).map((product) => (
-            <ProductCard key={product.id} product={product} onAddToCart={() => onAddToCart(product)} />
+            <ProductCard key={product.id} product={product} onAddToCart={() => onAddToCart(product)} onOpenProduct={onOpenProduct} />
           ))}
         </div>
       </section>
@@ -182,7 +184,7 @@ export function CategoriesPage({ categories, onSelectCategory }) {
   )
 }
 
-export function ShopPage({ products, onAddToCart, onOpenFilters, searchQuery, onSearchChange }) {
+export function ShopPage({ products, onAddToCart, onOpenProduct, onOpenFilters, searchQuery, onSearchChange }) {
   return (
     <section className="px-4 py-4">
       <div className="mb-3 flex items-center justify-between">
@@ -210,7 +212,7 @@ export function ShopPage({ products, onAddToCart, onOpenFilters, searchQuery, on
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {products.map((product) => (
-            <ProductCard key={product.id} product={product} onAddToCart={() => onAddToCart(product)} />
+            <ProductCard key={product.id} product={product} onAddToCart={() => onAddToCart(product)} onOpenProduct={onOpenProduct} />
           ))}
         </div>
       )}
@@ -218,7 +220,7 @@ export function ShopPage({ products, onAddToCart, onOpenFilters, searchQuery, on
   )
 }
 
-export function DealsPage({ products, onAddToCart, effectivePrice }) {
+export function DealsPage({ products, onAddToCart, onOpenProduct, effectivePrice }) {
   return (
     <section className="px-4 py-5">
       <div className="mb-4 flex items-center justify-between">
@@ -233,7 +235,7 @@ export function DealsPage({ products, onAddToCart, effectivePrice }) {
           const Icon = product.icon || Package
 
           return (
-            <div key={product.id} className="rounded-2xl border border-surface-line bg-white p-3 shadow-card">
+            <div key={product.id} role="button" tabIndex={0} onClick={() => onOpenProduct(product)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') onOpenProduct(product) }} className="cursor-pointer rounded-2xl border border-surface-line bg-white p-3 shadow-card">
               <div className="flex items-center gap-3">
                 <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface-soft text-primary">
                   <Icon size={26} strokeWidth={1.5} />
@@ -247,7 +249,7 @@ export function DealsPage({ products, onAddToCart, effectivePrice }) {
                   </div>
                 </div>
                 <button
-                  onClick={() => onAddToCart(product)}
+                  onClick={(event) => { event.stopPropagation(); onAddToCart(product) }}
                   className="rounded-full bg-primary px-3 py-2 text-[11px] font-bold text-white shadow-cta"
                 >
                   Add
@@ -256,6 +258,44 @@ export function DealsPage({ products, onAddToCart, effectivePrice }) {
             </div>
           )
         }) : <p className="rounded-2xl border border-dashed border-surface-line bg-surface-soft p-8 text-center text-[13px] font-semibold text-ink-muted">No deals available.</p>}
+      </div>
+    </section>
+  )
+}
+
+export function ProductDetailPage({ product, onBack, onAddToCart }) {
+  const Icon = product.icon || Package
+  const discount = Number(product.discountPct || 0)
+  const finalPrice = Number(product.price || 0) * (1 - discount / 100)
+
+  return (
+    <section className="px-4 py-4">
+      <button onClick={onBack} className="mb-4 flex items-center gap-2 text-[12px] font-bold text-ink-muted">
+        <ArrowLeft size={16} /> Back to shop
+      </button>
+
+      <div className="overflow-hidden rounded-3xl border border-surface-line bg-white shadow-card">
+        <div className="relative flex h-[260px] items-center justify-center bg-gradient-to-br from-slate-50 to-slate-200">
+          {product.image ? <img src={product.image} alt={product.name} className="h-full w-full object-cover" /> : <Icon size={82} strokeWidth={1.2} className="text-primary" />}
+          {product.badge ? <span className={`absolute left-4 top-4 rounded-full px-3 py-1.5 text-[10px] font-extrabold text-white ${product.badgeColor || 'bg-primary'}`}>{product.badge}</span> : null}
+        </div>
+        <div className="p-5">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-primary">{product.category}</p>
+          <h1 className="mt-1 text-[24px] font-extrabold leading-tight text-ink">{product.name}</h1>
+          <div className="mt-3 flex items-center gap-2 text-[12px] text-ink-muted">
+            <Star size={14} className="fill-amber-400 text-amber-400" />
+            <b className="text-ink">{product.rating}</b>
+            <span>({product.reviews} reviews)</span>
+          </div>
+          <p className="mt-5 text-[14px] leading-relaxed text-ink-muted">{product.description || 'No description available.'}</p>
+          <div className="mt-6 flex items-end gap-3">
+            <strong className="text-[26px] font-extrabold text-ink">${finalPrice.toFixed(2)}</strong>
+            {discount > 0 ? <><span className="text-[14px] text-ink-muted line-through">${Number(product.price).toFixed(2)}</span><span className="rounded-full bg-primary/10 px-2 py-1 text-[11px] font-bold text-primary">-{discount}%</span></> : null}
+          </div>
+          <button onClick={() => onAddToCart(product)} className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3.5 text-[13px] font-extrabold text-white shadow-cta active:scale-[0.98]">
+            Add to cart
+          </button>
+        </div>
       </div>
     </section>
   )

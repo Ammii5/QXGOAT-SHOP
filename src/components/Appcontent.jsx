@@ -6,6 +6,7 @@ const AppContext = createContext(null)
 export function AppProvider({ children }) {
   // ---- navigation ----
   const [activeTab, setActiveTabState] = useState('home')
+  const [selectedProduct, setSelectedProduct] = useState(null)
 
   // ---- search ----
   const [searchQuery, setSearchQuery] = useState('')
@@ -78,7 +79,15 @@ export function AppProvider({ children }) {
 
   function goToTab(tab) {
     setActiveTabState(tab)
+    setSelectedProduct(null)
     setSearchQuery('')
+    closeAllOverlays()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function openProduct(product) {
+    setSelectedProduct(product)
+    setActiveTabState('product')
     closeAllOverlays()
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -211,6 +220,8 @@ export function AppProvider({ children }) {
 
   const value = {
     products: allProducts,
+    selectedProduct,
+    openProduct,
     categories: categoriesWithCounts,
     activeTab,
     goToTab,

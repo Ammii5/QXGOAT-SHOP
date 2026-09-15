@@ -2,12 +2,20 @@ import { Package, Star, ShoppingCart } from 'lucide-react'
 
 const formatPrice = (price) => `$${Number(price).toFixed(2)}`
 
-export default function ProductCard({ product, onAddToCart }) {
+export default function ProductCard({ product, onAddToCart, onOpenProduct }) {
   const { name, badge, badgeColor, rating, reviews, price } = product
   const Icon = product.icon || Package
 
   return (
-    <div className="w-[164px] shrink-0 snap-start overflow-hidden rounded-2xl border border-surface-line bg-white shadow-card">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpenProduct(product)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') onOpenProduct(product)
+      }}
+      className="w-[164px] shrink-0 snap-start cursor-pointer overflow-hidden rounded-2xl border border-surface-line bg-white shadow-card"
+    >
       <div className="relative flex h-[118px] items-center justify-center bg-gradient-to-br from-slate-50 to-slate-200">
         <span
           className={`absolute left-2 top-2 rounded-full px-2 py-1 text-[8.5px] font-extrabold tracking-wide text-white ${badgeColor}`}
@@ -40,7 +48,10 @@ export default function ProductCard({ product, onAddToCart }) {
           <span className="text-[14.5px] font-extrabold text-ink">{formatPrice(price)}</span>
           <button
             aria-label={`Add ${name} to cart`}
-            onClick={onAddToCart}
+            onClick={(event) => {
+              event.stopPropagation()
+              onAddToCart()
+            }}
             className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-primary text-white shadow-cta transition-transform active:scale-90"
           >
             <ShoppingCart size={14} strokeWidth={2.2} />

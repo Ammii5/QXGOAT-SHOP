@@ -493,7 +493,8 @@
         }
       };
 
-      const defaultProducts = [
+      const defaultProducts = [];
+      /*
         {
           id: crypto.randomUUID ? crypto.randomUUID() : 'p1',
           name: 'Courses',
@@ -590,9 +591,9 @@
           reviews: '780+',
           image: ''
         }
-      ];
+      ]; */
 
-      let products = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || defaultProducts;
+      let products = defaultProducts;
 
       const form = document.getElementById('productForm');
       const productGrid = document.getElementById('productGrid');
@@ -761,7 +762,6 @@
       }
 
       async function saveProducts() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
         render();
         try {
           await uploadProductsToBase44();
@@ -938,7 +938,6 @@
             reviews: product.reviews || '0',
             image: product.image || '',
           }));
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
         }
         render();
       }

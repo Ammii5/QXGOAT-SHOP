@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { getStoredProducts, getStoredCategories, syncProductsFromApi } from '../data/storeDb'
+import { syncProductsFromApi } from '../data/storeDb'
 
 const AppContext = createContext(null)
 
@@ -33,19 +33,22 @@ export function AppProvider({ children }) {
 
   // ---- cart ----
   const [cartItems, setCartItems] = useState([]) // [{ productId, qty }]
-  const [liveProducts, setLiveProducts] = useState(() => getStoredProducts())
+  const [liveProducts, setLiveProducts] = useState([])
   const allProducts = liveProducts
-  const allCategories = useMemo(() => getStoredCategories(), [liveProducts])
+  const allCategories = useMemo(() => {
+    const map = new Map()
+    for (const product of allProducts) {
+      const id = product.categoryId || product.category?.toLowerCase().replace(/\s+/g, '-')
+      if (!id) continue
+      const category = map.get(id) || { id, name: product.category || id, count: 0 }
+      category.count += 1
+      map.set(id, category)
+    }
+    return [...map.values()]
+  }, [allProducts])
 
   useEffect(() => {
     let isMounted = true
-
-    function handleProductStorageChange(event) {
-      if (event.key !== 'qxgoat_store_products' || !isMounted) return
-      setLiveProducts(getStoredProducts())
-    }
-
-    window.addEventListener('storage', handleProductStorageChange)
 
     async function refreshProducts() {
       try {
@@ -59,7 +62,6 @@ export function AppProvider({ children }) {
     refreshProducts()
     return () => {
       isMounted = false
-      window.removeEventListener('storage', handleProductStorageChange)
     }
   }, [])
 

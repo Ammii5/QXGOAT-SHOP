@@ -1,6 +1,3 @@
-import { BookOpen, Bot, Code2, WalletCards } from 'lucide-react'
-
-export const STORAGE_KEY = 'qxgoat_store_products'
 export const BASE44_API_KEY = import.meta.env.VITE_FILESTORE_API_KEY ||
   '9317e9c78aca4531a58fc6301fb4ff97d9f40b41224648d2978d48cf7a0b10bf'
 export const BASE44_DISPATCHER = import.meta.env.DEV
@@ -11,134 +8,8 @@ export const FILESTORE_LIST_ENDPOINT = `${BASE44_DISPATCHER}/filestoreList`
 
 let productsSyncPromise = null
 
-export const defaultProducts = [
-  {
-    id: 'p1',
-    categoryId: 'courses',
-    category: 'Courses',
-    name: 'Courses',
-    badge: 'TOP PICK',
-    badgeColor: 'bg-primary',
-    rating: 4.9,
-    reviews: '2.4K+',
-    price: 149.99,
-    discountPct: 20,
-    description: 'Learn practical digital trading systems, automation flows, and product-building workflows.',
-  },
-  {
-    id: 'p2',
-    categoryId: 'qoutex',
-    category: 'Qoutex Coding',
-    name: 'Create Your Own Qoutex Coding',
-    badge: 'BUNDLE',
-    badgeColor: 'bg-emerald-600',
-    rating: 4.8,
-    reviews: '1.3K+',
-    price: 499.99,
-    discountPct: 15,
-    description: 'Custom Qoutex coding setup tailored for your business or trading workflow.',
-  },
-  {
-    id: 'p3',
-    categoryId: 'exness',
-    category: 'Exness Coding',
-    name: 'Create Your Own Exness Coding',
-    badge: 'PREMIUM',
-    badgeColor: 'bg-violet-600',
-    rating: 4.9,
-    reviews: '1.7K+',
-    price: 599.99,
-    discountPct: 18,
-    description: 'Build a custom Exness-ready solution tailored to your trading and automation goals.',
-  },
-  {
-    id: 'p4',
-    categoryId: 'bots',
-    category: 'Trading Bot',
-    name: 'Advanced Trading Bot Creation',
-    badge: 'HOT',
-    badgeColor: 'bg-amber-500',
-    rating: 4.8,
-    reviews: '980+',
-    price: 799.99,
-    discountPct: 25,
-    description: 'Professional bot creation focused on automation, execution speed, and strategy control.',
-  },
-  {
-    id: 'p5',
-    categoryId: 'bots',
-    category: 'Trading Bot',
-    name: 'Create Your Own Trading Bot',
-    badge: 'POPULAR',
-    badgeColor: 'bg-cyan-600',
-    rating: 4.7,
-    reviews: '1.1K+',
-    price: 399.99,
-    discountPct: 12,
-    description: 'A customizable trading bot package built around your preferred strategy and execution rules.',
-  },
-  {
-    id: 'p6',
-    categoryId: 'qoutex',
-    category: 'Qoutex Coding',
-    name: 'Qoutex Coding',
-    badge: 'NEW',
-    badgeColor: 'bg-sky-500',
-    rating: 4.8,
-    reviews: '890+',
-    price: 249.99,
-    discountPct: 10,
-    description: 'A ready-to-launch Qoutex coding solution for fast deployment and smoother trading operations.',
-  },
-  {
-    id: 'p7',
-    categoryId: 'exness',
-    category: 'Exness Coding',
-    name: 'Exness Coding',
-    badge: 'BESTSELLER',
-    badgeColor: 'bg-indigo-600',
-    rating: 4.9,
-    reviews: '1.5K+',
-    price: 299.99,
-    discountPct: 17,
-    description: 'Efficient Exness coding support for onboarding, execution flow, and trading setup optimization.',
-  },
-  {
-    id: 'p8',
-    categoryId: 'wallets',
-    category: 'Wallets',
-    name: 'Binanace Wallets',
-    badge: 'SECURE',
-    badgeColor: 'bg-rose-500',
-    rating: 4.6,
-    reviews: '780+',
-    price: 129.99,
-    discountPct: 14,
-    description: 'Secure wallet solutions built for digital trading and day-to-day finance workflows.',
-  },
-]
-
-export const defaultCategories = [
-  { id: 'courses', name: 'Courses', icon: BookOpen, count: 1 },
-  { id: 'qoutex', name: 'Qoutex Coding', icon: Code2, count: 2 },
-  { id: 'exness', name: 'Exness Coding', icon: Code2, count: 2 },
-  { id: 'bots', name: 'Trading Bots', icon: Bot, count: 2 },
-  { id: 'wallets', name: 'Wallets', icon: WalletCards, count: 1 },
-]
-
-function safeReadStorage() {
-  try {
-    if (typeof window === 'undefined') return null
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
-    const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed)) return parsed
-    if (parsed && Array.isArray(parsed.products)) return parsed.products
-    return null
-  } catch {
-    return null
-  }
-}
+export const defaultProducts = []
+export const defaultCategories = []
 
 function slugify(value) {
   return String(value || '')
@@ -282,7 +153,6 @@ export async function syncProductsFromApi() {
         throw new Error('FileStore returned no products')
       }
 
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteProducts))
       return remoteProducts
     })
   }
@@ -291,32 +161,9 @@ export async function syncProductsFromApi() {
 }
 
 export function getStoredProducts() {
-  const stored = safeReadStorage()
-  return stored && stored.length ? stored.map(normalizeProduct) : defaultProducts
+  return []
 }
 
 export function getStoredCategories() {
-  const stored = safeReadStorage()
-  if (!stored || !stored.length) {
-    return defaultCategories
-  }
-
-  const map = new Map()
-  for (const item of stored) {
-    const categoryName = item.category || 'Courses'
-    const categoryId = item.categoryId || categoryName.toLowerCase().replace(/\s+/g, '-')
-    if (!map.has(categoryId)) {
-      const icon = categoryId === 'courses'
-        ? BookOpen
-        : categoryId === 'bots' || categoryId === 'trading-bot'
-          ? Bot
-          : categoryId === 'wallets'
-            ? WalletCards
-            : Code2
-      map.set(categoryId, { id: categoryId, name: categoryName, icon, count: 0 })
-    }
-    map.get(categoryId).count += 1
-  }
-
-  return [...map.values()].map((category) => ({ ...category, count: category.count || 0 }))
+  return []
 }

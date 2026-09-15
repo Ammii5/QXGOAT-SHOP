@@ -22,12 +22,13 @@ export default function App() {
     unreadCount,
     setNotifOpen,
     cartCount,
+    products,
   } = useApp()
 
   const renderPage = () => {
     switch (activeTab) {
       case 'home':
-        return <HomePage onAddToCart={addToCart} onShopNow={() => goToTab('shop')} />
+        return <HomePage products={products} categories={categories} onAddToCart={addToCart} onShopNow={() => goToTab('shop')} />
       case 'categories':
         return <CategoriesPage categories={categories} onSelectCategory={(categoryId) => goToTab('shop') || null} />
       case 'shop':
@@ -51,7 +52,7 @@ export default function App() {
           />
         )
       default:
-        return <HomePage onAddToCart={addToCart} onShopNow={() => goToTab('shop')} />
+        return <HomePage products={products} categories={categories} onAddToCart={addToCart} onShopNow={() => goToTab('shop')} />
     }
   }
 

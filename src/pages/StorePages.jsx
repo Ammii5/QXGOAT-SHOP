@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
 
-export function HomePage({ onAddToCart, onShopNow }) {
+export function HomePage({ products, categories, onAddToCart, onShopNow }) {
   return (
     <>
       <div className="flex gap-2.5 px-4 pb-1 pt-3.5">
@@ -86,16 +86,16 @@ export function HomePage({ onAddToCart, onShopNow }) {
           <h2 className="text-[18px] font-extrabold text-ink">Top Digital Categories</h2>
         </div>
         <div className="no-scrollbar snap-x-mandatory flex gap-4 overflow-x-auto px-4 pb-1.5 pt-4">
-          {['Courses', 'Trading Bots', 'Qoutex', 'Exness', 'Wallets'].map((name) => (
+          {categories.map((category) => (
             <button
-              key={name}
+              key={category.id}
               className="flex w-16 shrink-0 snap-start flex-col items-center gap-2 transition-transform active:scale-95"
               onClick={onShopNow}
             >
               <span className="flex h-[58px] w-[58px] items-center justify-center rounded-full border border-surface-line bg-white text-primary shadow-soft">
                 <Star size={22} strokeWidth={2} />
               </span>
-              <span className="text-center text-[11px] font-semibold text-ink">{name}</span>
+              <span className="text-center text-[11px] font-semibold text-ink">{category.name}</span>
             </button>
           ))}
         </div>
@@ -111,26 +111,8 @@ export function HomePage({ onAddToCart, onShopNow }) {
         </div>
 
         <div className="no-scrollbar snap-x-mandatory flex gap-3.5 overflow-x-auto px-4 pb-2 pt-3.5">
-          {['p1', 'p2', 'p3'].map((id) => (
-            <ProductCard
-              key={id}
-              product={{
-                id,
-                name:
-                  id === 'p1'
-                    ? 'Courses'
-                    : id === 'p2'
-                      ? 'Create Your Own Qoutex Coding'
-                      : 'Create Your Own Exness Coding',
-                icon: id === 'p1' ? Star : id === 'p2' ? Gift : Tag,
-                badge: id === 'p1' ? 'TOP PICK' : id === 'p2' ? 'BUNDLE' : 'PREMIUM',
-                badgeColor: id === 'p1' ? 'bg-primary' : id === 'p2' ? 'bg-emerald-600' : 'bg-violet-600',
-                rating: id === 'p1' ? 4.9 : id === 'p2' ? 4.8 : 4.9,
-                reviews: id === 'p1' ? '2.4K+' : id === 'p2' ? '1.3K+' : '1.7K+',
-                price: id === 'p1' ? 149.99 : id === 'p2' ? 499.99 : 599.99,
-              }}
-              onAddToCart={onAddToCart}
-            />
+          {products.slice(0, 3).map((product) => (
+            <ProductCard key={product.id} product={product} onAddToCart={() => onAddToCart(product)} />
           ))}
         </div>
       </section>

@@ -1,12 +1,11 @@
 import { BookOpen, Bot, Code2, WalletCards } from 'lucide-react'
 
 export const STORAGE_KEY = 'qxgoat_store_products'
-export const BASE44_API_KEY = import.meta.env.VITE_FILESTORE_API_KEY || ''
+export const BASE44_API_KEY = import.meta.env.VITE_FILESTORE_API_KEY ||
+  '9317e9c78aca4531a58fc6301fb4ff97d9f40b41224648d2978d48cf7a0b10bf'
 export const BASE44_DISPATCHER = import.meta.env.DEV
   ? '/base44'
-  : import.meta.env.VITE_FILESTORE_API_URL?.includes('workers.dev')
-    ? 'https://sweet-sync-your-stack.base44.app/functions'
-    : import.meta.env.VITE_FILESTORE_API_URL || 'https://sweet-sync-your-stack.base44.app/functions'
+  : 'https://sweet-sync-your-stack.base44.app/functions'
 export const FILESTORE_UPLOAD_ENDPOINT = `${BASE44_DISPATCHER}/filestoreUpload`
 export const FILESTORE_LIST_ENDPOINT = `${BASE44_DISPATCHER}/filestoreList`
 
@@ -208,7 +207,7 @@ async function base44Request(endpoint, body) {
       'Content-Type': 'application/json',
       'x-api-key': BASE44_API_KEY,
     },
-    body: JSON.stringify({ ...(body || {}), api_key: BASE44_API_KEY }),
+    body: JSON.stringify(body || {}),
   })
 
   if (!response.ok) {
@@ -232,57 +231,59 @@ export async function ingestWebsiteFile({ fileUrl, name, tags = 'ai-ingest' }) {
   })
 }
 
-export async function listStoredFiles(limit = 50) {
+export async function uploadToStore({ file_url, file_base64, name, content_type, tags }) {
+  return base44Request('/filestoreUpload', {
+    file_url,
+    file_base64,
+    name,
+    content_type,
+    tags,
+  })
+}
+
+export async function listStoredFiles(limit = 200) {
   return base44Request('/filestoreList', { limit })
 }
 
 export async function fetchProductsFromApi() {
-  try {
-    const listResponse = await listStoredFiles(50)
-    const files = extractRemoteFiles(listResponse)
+  const listResponse = await listStoredFiles(200)
+  const files = extractRemoteFiles(listResponse)
 
-    const productFile = files.find((file) => {
-      const name = (file.name || file.filename || file.title || '').toLowerCase()
-      return /qxgoat|products|store/.test(name) && /\.json$/i.test(name)
-    })
+  const productFile = files.find((file) => {
+    const name = (file.name || file.filename || file.title || '').toLowerCase()
+    return /qxgoat|products|store/.test(name) && /\.json$/i.test(name)
+  })
 
-    if (!productFile) {
-      return null
-    }
-
-    const fileUrl = getRemoteFileUrl(productFile)
-    if (!fileUrl) {
-      return null
-    }
-
-    const raw = await fetch(fileUrl)
-    if (!raw.ok) {
-      return null
-    }
-
-    const json = await raw.json()
-    if (Array.isArray(json)) return attachRemoteImages(json.map(normalizeProduct), files)
-    if (json && Array.isArray(json.products)) return attachRemoteImages(json.products.map(normalizeProduct), files)
-    if (json && Array.isArray(json.data)) return attachRemoteImages(json.data.map(normalizeProduct), files)
-    return null
-  } catch (error) {
-    if (error.status !== 401) {
-      console.warn('Failed to load products from Base44 API, using local fallback.', error)
-    }
-    return null
+  if (!productFile) {
+    throw new Error('No QXGOAT product JSON file found in FileStore')
   }
+
+  const fileUrl = getRemoteFileUrl(productFile)
+  if (!fileUrl) {
+    throw new Error('The QXGOAT product file has no public URL')
+  }
+
+  const raw = await fetch(fileUrl)
+  if (!raw.ok) {
+    throw new Error(`Product file download failed: ${raw.status}`)
+  }
+
+  const json = await raw.json()
+  if (Array.isArray(json)) return attachRemoteImages(json.map(normalizeProduct), files)
+  if (json && Array.isArray(json.products)) return attachRemoteImages(json.products.map(normalizeProduct), files)
+  if (json && Array.isArray(json.data)) return attachRemoteImages(json.data.map(normalizeProduct), files)
+  throw new Error('The QXGOAT product file has an unsupported JSON shape')
 }
 
 export async function syncProductsFromApi() {
   if (!productsSyncPromise) {
     productsSyncPromise = fetchProductsFromApi().then((remoteProducts) => {
-      if (remoteProducts && remoteProducts.length) {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteProducts))
-        return remoteProducts
+      if (!remoteProducts.length) {
+        throw new Error('FileStore returned no products')
       }
 
-      const localProducts = getStoredProducts()
-      return localProducts && localProducts.length ? localProducts : defaultProducts
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(remoteProducts))
+      return remoteProducts
     })
   }
 

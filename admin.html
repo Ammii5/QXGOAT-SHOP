@@ -730,6 +730,7 @@
         const payload = buildProductPayload();
         const json = JSON.stringify(payload, null, 2);
         const dataUrl = encodeDataUrl(json);
+        const fileBase64 = dataUrl.split(',')[1];
 
         try {
           const response = await fetch(BASE44_UPLOAD_ENDPOINT, {
@@ -739,14 +740,16 @@
               'x-api-key': BASE44_API_KEY
             },
             body: JSON.stringify({
-              file_url: dataUrl,
+              file_base64: fileBase64,
               name: 'qxgoat-products.json',
+              content_type: 'application/json',
               tags: 'qxgoat-store'
             })
           });
 
           if (!response.ok) {
-            throw new Error(`Base44 upload failed: ${response.status}`);
+            const detail = await response.text();
+            throw new Error(`Base44 upload failed: ${response.status}${detail ? ` - ${detail}` : ''}`);
           }
 
           return await response.json();
